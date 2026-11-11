@@ -1,0 +1,32 @@
+target: scripts/apply_skill_edits.py
+tests:
+- tests.test_ops_scripts
+- tests.test_packaging
+mutants:
+- id: multi-applied
+  old: 'if n == 1 and e["find"] != e["replace"]:'
+  new: 'if n >= 1 and e["find"] != e["replace"]:'
+- id: noop-counted
+  old: 'if n == 1 and e["find"] != e["replace"]:'
+  new: 'if n == 1:'
+- id: reason-swap
+  old: ("not found" if n == 0 else f"{n} matches")
+  new: ("not found" if n == 1 else f"{n} matches")
+- id: stamp-date
+  old: '"verified_at": today,'
+  new: '"verified_at": "x",'
+- id: unresolved-dropped
+  old: '"unresolved": unresolved'
+  new: '"unresolved": 0'
+- id: missing-not-reported
+  old: 'report.append(f"{s[''skill'']}: missing file"); continue'
+  new: continue
+- id: result-unwrap
+  old: d = d.get("result", d)
+  new: d = d
+- id: summary-cut
+  old: '[:140]'
+  new: '[:1]'
+- id: default-dir
+  old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")

@@ -1,0 +1,55 @@
+# Deterministic evals (scripts/eval_run.py). tier must = known truth, CI fails on regression; tier coverage = known gap, reported only.
+# Replace these examples with questions your agents actually ask. Add one whenever a session had to re-learn something.
+- id: deploy-path
+  q: How do prod changes get deployed?
+  run: {search: "deploy gitops"}
+  expect: [example-gitops]
+  needs: [facts/example-fact.md]
+  tier: must
+- id: unknown-topic-has-no-hit
+  q: A topic nobody wrote down must not produce a confident answer
+  run: {cmd: [python3, scripts/brain.py, search, zzzqxvnonsense]}
+  expect: [no matches]
+  tier: must
+- id: workstream-listed
+  q: What work is in flight?
+  run: {cmd: [python3, scripts/brain.py, ws, list]}
+  expect: [example-workstream]
+  needs: [workstreams/example-workstream/STATE.md]
+  tier: must
+- id: session-start-lists-workstreams
+  q: What does an agent see at session start in a repo with a matching workstream?
+  run: {cmd: [python3, scripts/session_start.py, --no-probes, --cwd, evals]}
+  expect: ["Brain context for"]
+  tier: must
+- id: lint-clean
+  q: Is the brain itself lint-clean?
+  run: {cmd: [python3, scripts/lint_facts.py, --strict]}
+  expect: ["0 hard"]
+  tier: must
+- id: rare-term-outranks-common
+  q: Searching "deploy gitops" must surface the gitops fact first (rare term outranks a common one)
+  run: {cmd: [python3, scripts/brain.py, search, deploy, gitops]}
+  first_line: example-fact
+  needs: [facts/example-fact.md]
+  tier: must
+- id: init-is-documented
+  q: How do I set the brain up in one command?
+  run: {search: "init claude"}
+  expect: [brain.py init]
+  tier: must
+- id: capture-is-documented
+  q: How are learnings captured automatically?
+  run: {search: "capture_hook"}
+  expect: [capture_hook]
+  tier: must
+- id: compaction-is-documented
+  q: How do I compact the inbox?
+  run: {search: "compact inbox"}
+  expect: [brain.py compact]
+  tier: must
+- id: mining-is-documented
+  q: How do I find learnings in past sessions?
+  run: {search: "mine_sessions recurring errors"}
+  expect: [mine_sessions]
+  tier: must

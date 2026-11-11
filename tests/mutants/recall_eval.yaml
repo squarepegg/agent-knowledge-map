@@ -1,0 +1,67 @@
+target: scripts/recall_eval.py
+tests:
+- tests.test_recall
+mutants:
+- id: dedupe
+  old: 'if p not in seen: seen.add(p); out.append(p)'
+  new: out.append(p)
+- id: rank-base
+  old: enumerate(paths, 1)
+  new: enumerate(paths, 0)
+- id: substring
+  old: 'if expect in p: return i'
+  new: 'if expect == p: return i'
+- id: r1
+  old: if r == 1) / n
+  new: if r is not None and r <= 2) / n
+- id: r5-edge
+  old: r <= 5) / n) if n else 1.0}
+  new: r < 5) / n) if n else 1.0}
+- id: r5-none
+  old: if r is not None and r <= 5
+  new: if r <= 5 or r is None
+- id: empty-r1
+  old: (sum(1 for r in ranks if r == 1) / n) if n else 1.0
+  new: (sum(1 for r in ranks if r == 1) / n) if n else 0.0
+- id: empty-r5
+  old: if r is not None and r <= 5) / n) if n else 1.0}
+  new: if r is not None and r <= 5) / n) if n else 0.0}
+- id: needs-ignored
+  old: 'if any(not os.path.exists(os.path.join(brain_dir, n)) for n in e.get("needs") or []): continue'
+  new: pass
+- id: needs-all
+  old: if any(not os.path.exists(os.path.join(brain_dir, n))
+  new: if all(not os.path.exists(os.path.join(brain_dir, n))
+- id: stopwords
+  old: brain.query_words(e["q"])
+  new: e["q"].split()
+- id: limit
+  old: limit=200
+  new: limit=2
+- id: miss-edge
+  old: 'if r["rank"] is None or r["rank"] > 5:'
+  new: 'if r["rank"] is None or r["rank"] > 6:'
+- id: miss-none
+  old: 'if r["rank"] is None or r["rank"] > 5:'
+  new: 'if r["rank"] > 5:'
+- id: floor-edge
+  old: return 0 if sc["recall@5"] >= floor else 1
+  new: return 0 if sc["recall@5"] > floor else 1
+- id: floor-default
+  old: os.environ.get("RECALL_FLOOR", 0.9)
+  new: os.environ.get("RECALL_FLOOR", 0.5)
+- id: floor-env
+  old: else float(os.environ.get("RECALL_FLOOR", 0.9))
+  new: else 0.9
+- id: floor-flag
+  old: float(argv[argv.index("--floor") + 1]) if "--floor" in argv
+  new: 0.9 if True
+- id: json
+  old: 'if "--json" in argv: json.dump'
+  new: 'if False: json.dump'
+- id: default-path
+  old: os.path.join(B, "evals", "recall.yaml")
+  new: os.path.join(B, "evals", "x.yaml")
+- id: print-format
+  old: recall@1={sc['recall@1']:.2f}
+  new: recall@1={sc['recall@1']:.1f}

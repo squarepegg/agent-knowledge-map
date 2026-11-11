@@ -1,0 +1,55 @@
+# Evals for the data-team example (run: python scripts/eval_run.py examples/data-team/evals/questions.yaml after `init --example data-team`)
+- id: midnight-mismatch
+  q: Why do per-store and global revenue disagree near midnight?
+  run:
+    search: order_date UTC
+  expect:
+  - orders.created_at
+  - UTC
+  tier: must
+  first_line: orders-timestamps
+- id: late-rows
+  q: Why did my backfilled rows not show up in the incremental model?
+  run:
+    search: incremental late rows
+  expect:
+  - full-refresh
+  tier: must
+  first_line: incremental-models
+- id: finality
+  q: When are yesterday's numbers final?
+  run:
+    search: late rollups final
+  expect:
+  - T+3
+  tier: must
+  first_line: mobile-events
+- id: pii-join
+  q: How do I join on email without raw PII?
+  run:
+    search: email hashed restricted
+  expect:
+  - email_hash
+  tier: must
+  first_line: pii-hashed
+- id: backfill
+  q: How do I run an Airflow backfill safely?
+  run:
+    search: backfill concurrency
+  expect:
+  - max-active-runs
+  tier: must
+- id: sla
+  q: When must the daily pipeline finish?
+  run:
+    search: daily_core 07:00
+  expect:
+  - 07:00 UTC
+  tier: must
+- id: in-flight
+  q: What is in flight?
+  run:
+    search: revenue metric layer
+  expect:
+  - Move revenue to the metric layer
+  tier: must

@@ -1,0 +1,7 @@
+target: scripts/_guard.py
+tests: [tests.test_evals]
+mutants:
+- {id: ratio, old: 'new_count < min_ratio * old', new: 'new_count < 0'}
+- {id: override-off, old: 'os.environ.get("BRAIN_ALLOW_SHRINK") == "1" or', new: ''}
+- {id: exit-code, old: 'sys.exit(3)', new: 'sys.exit(0)'}
+- {id: minbase, old: 'old >= min_base and', new: ''}

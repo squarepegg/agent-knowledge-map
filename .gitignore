@@ -1,0 +1,8 @@
+PRIMER.md
+digests/
+drafts/
+.cache/
+__pycache__/
+inbox/*.md
+!inbox/README.md
+!metrics/.gitkeep

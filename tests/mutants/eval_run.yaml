@@ -1,0 +1,49 @@
+target: scripts/eval_run.py
+tests:
+- tests.test_evals
+mutants:
+- id: missing-ignored
+  old: return (not missing and first_ok and not hit), missing
+  new: return (first_ok and not hit), missing
+- id: forbid-ignored
+  old: return (not missing and first_ok and not hit), missing
+  new: return (not missing and first_ok), missing
+- id: first-ignored
+  old: return (not missing and first_ok and not hit), missing
+  new: return (not missing and not hit), missing
+- id: first-empty-ok
+  old: first_ok = (not q.get("first_line")) or (bool(lines) and
+  new: first_ok = (not q.get("first_line")) or (True or
+- id: first-not-top
+  old: q["first_line"] in lines[0]
+  new: q["first_line"] in out
+- id: blank-not-skipped
+  old: lines = [l for l in out.splitlines() if l.strip()]
+  new: lines = out.splitlines()
+- id: coverage-fails
+  old: return 0 if all(r["pass"] for r in must) else 1
+  new: return 0 if all(r["pass"] for r in res) else 1
+- id: must-ignored
+  old: return 0 if all(r["pass"] for r in must) else 1
+  new: return 0
+- id: error-passes
+  old: '"pass": ok and not err'
+  new: '"pass": ok'
+- id: tier-default
+  old: q.get("tier", "must")
+  new: q.get("tier", "coverage")
+- id: needs-any
+  old: 'if any(not os.path.exists(os.path.join(B, n)) for n in q.get("needs") or []):'
+  new: 'if all(not os.path.exists(os.path.join(B, n)) for n in q.get("needs") or []):'
+- id: needs-ignored
+  old: 'if any(not os.path.exists(os.path.join(B, n)) for n in q.get("needs") or []):'
+  new: 'if False:'
+- id: needs-inverted
+  old: if any(not os.path.exists(os.path.join(B, n))
+  new: if any(os.path.exists(os.path.join(B, n))
+- id: skip-counted-cov
+  old: "cov = [r for r in res if r[\"tier\"] not in (\"must\", \"skip\")]\n    print"
+  new: "cov = [r for r in res if r[\"tier\"] != \"must\"]\n    print"
+- id: skip-tag
+  old: tag = "SKIP" if r["tier"] == "skip" else
+  new: tag = "PASS" if r["tier"] == "skip" else

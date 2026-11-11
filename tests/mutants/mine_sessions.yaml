@@ -1,0 +1,127 @@
+target: scripts/mine_sessions.py
+tests:
+- tests.test_mine_sessions
+mutants:
+- id: mask-url
+  old: '(URL, "<url>"), '
+  new: ''
+- id: mask-uuid
+  old: '(UUID, "<id>"), '
+  new: ''
+- id: mask-quoted
+  old: '(QUOTED, "<q>"), '
+  new: ''
+- id: mask-path
+  old: '(PATH, "<path>"), '
+  new: ''
+- id: mask-hex
+  old: '(HEX, "<hex>"), '
+  new: ''
+- id: mask-num
+  old: (NUM, "<n>")
+  new: ''
+- id: mask-order
+  old: (URL, "<url>"), (UUID, "<id>"), (QUOTED, "<q>"), (PATH, "<path>")
+  new: (PATH, "<path>"), (URL, "<url>"), (UUID, "<id>"), (QUOTED, "<q>")
+- id: lower
+  old: t = body.lower()
+  new: t = body
+- id: whitespace
+  old: t = re.sub(r"\s+", " ", t).strip(" .:;,-")[:90]
+  new: t = t.strip(" .:;,-")[:90]
+- id: strip
+  old: .strip(" .:;,-")[:90]
+  new: '[:90]'
+- id: cap
+  old: "[:90]\n    return t"
+  new: "[:60]\n    return t"
+- id: min-len
+  old: MIN_LEN = 12
+  new: MIN_LEN = 13
+- id: min-len-low
+  old: MIN_LEN = 12
+  new: MIN_LEN = 11
+- id: min-len-compare
+  old: return t if len(t) >= MIN_LEN else ""
+  new: return t if len(t) > MIN_LEN else ""
+- id: arrow
+  old: body = body.split("=>", 1)[1] if "=>" in body else body
+  new: body = body
+- id: prefix
+  old: body = line[4:] if line.startswith("ERR ") else line
+  new: body = line
+- id: parse-err
+  old: 'if l.startswith("ERR "): errs.append(l)'
+  new: 'if l.startswith("ERR"): errs.append(l)'
+- id: parse-user
+  old: 'elif l.startswith("USER: "): users.append(l[6:])'
+  new: 'elif l.startswith("USER: "): users.append(l)'
+- id: min-default
+  old: 'def aggregate(sessions, min_sessions=2):'
+  new: 'def aggregate(sessions, min_sessions=3):'
+- id: min-compare
+  old: if len(s) >= min_sessions]
+  new: if len(s) > min_sessions]
+- id: distinct-sessions
+  old: err_sessions.setdefault(k, set()).add(name)
+  new: err_sessions.setdefault(k, set()).add(name + str(len(err_sessions)))
+- id: example-first
+  old: err_example.setdefault(k, l[:200])
+  new: err_example[k] = l[:200]
+- id: example-cut
+  old: err_example.setdefault(k, l[:200])
+  new: err_example.setdefault(k, l[:20])
+- id: corr-detect
+  old: 'if capture_hook.is_correction(u):'
+  new: 'if True:'
+- id: corr-trunc
+  old: '[:capture_hook.MAXLEN]'
+  new: '[:capture_hook.MAXLEN * 2]'
+- id: corr-ws
+  old: k = re.sub(r"\s+", " ", u).strip()[:capture_hook.MAXLEN]
+  new: k = u[:capture_hook.MAXLEN]
+- id: order-count
+  old: 'key=lambda c: (-c["count"], c["title"])'
+  new: 'key=lambda c: (c["count"], c["title"])'
+- id: order-title
+  old: 'key=lambda c: (-c["count"], c["title"])'
+  new: 'key=lambda c: (-c["count"],)'
+- id: known-prefix
+  old: re.sub(r"^Recurring error:\s*", "", cand["title"])
+  new: cand["title"]
+- id: known-inbox
+  old: 'if f"] {cand[''title'']}" in open(f, errors="ignore").read(): return True'
+  new: pass
+- id: known-brain
+  old: 'return compact.duplicate_of({"title": title}, brain_dir) is not None'
+  new: return False
+- id: run-filter
+  old: if not known(c, brain_dir)]
+  new: if True]
+- id: run-top
+  old: '[:top], len(sessions)'
+  new: ', len(sessions)'
+- id: run-min
+  old: aggregate(sessions, min_sessions)
+  new: aggregate(sessions, 2)
+- id: cli-write
+  old: 'if "--write" in argv:'
+  new: 'if True:'
+- id: cli-min
+  old: int(opt("--min", 2))
+  new: '2'
+- id: cli-top
+  old: int(opt("--top", 20))
+  new: '20'
+- id: cli-pos
+  old: (i == 0 or argv[i - 1] not in flags_with_value)
+  new: 'True'
+- id: cli-default-dir
+  old: os.path.join(B, "digests")
+  new: os.path.join(B, "digest")
+- id: write-note
+  old: brain.note(c["kind"], c["title"], c["body"], brain=B)
+  new: pass
+- id: singular
+  old: '''y'' if len(cands) == 1 else ''ies'''
+  new: '''ies'''

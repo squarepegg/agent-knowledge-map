@@ -1,0 +1,27 @@
+- term: Daily Core
+  kind: system
+  one_liner: Airflow DAG that builds the core fact and dimension tables each night; SLA 07:00 UTC
+  repos:
+  - analytics-airflow
+  core: true
+- term: Restricted schema
+  kind: concept
+  one_liner: Audited warehouse schema holding raw PII; everything else is hashed
+  repos:
+  - analytics-dbt
+  core: true
+- term: Rollup
+  kind: concept
+  one_liner: Pre-aggregated daily table; recomputed for D-1..D-3 because events arrive late
+  repos:
+  - analytics-dbt
+- term: Metric layer
+  kind: system
+  one_liner: Single governed definition of each business metric, consumed by dashboards and notebooks
+  repos:
+  - analytics-dbt
+  core: true
+- term: analyst_ro
+  kind: env
+  one_liner: Read-only warehouse role used by analysts and the warehouse MCP
+  repos: []

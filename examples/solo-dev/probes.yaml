@@ -1,0 +1,8 @@
+- id: gh
+  label: GitHub CLI
+  cmd:
+  - gh
+  - auth
+  - status
+  okWhen: exit0
+  fix: gh auth login

@@ -1,0 +1,17 @@
+# Retrieval recall for the data-team example: symptom-style queries -> the file that should come back (scripts/recall_eval.py)
+- q: revenue by store does not add up to the global number around midnight
+  expect: facts/orders-timestamps-utc
+- q: dbt incremental model ignores the rows I backfilled yesterday
+  expect: facts/incremental-models-miss-late-rows
+- q: yesterday's event count keeps going up the next day
+  expect: facts/mobile-events-arrive-late
+- q: can I get customer emails in the warehouse
+  expect: facts/pii-hashed-email
+- q: the airflow backfill made every dashboard crawl
+  expect: facts/airflow-backfill-concurrency
+- q: executive dashboard shows stale numbers in the morning
+  expect: facts/daily-core-sla
+- q: what are we migrating revenue to
+  expect: workstreams/revenue-metric-v2
+- q: which join key is safe for people without exposing identity
+  expect: facts/pii-hashed-email

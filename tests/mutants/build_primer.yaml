@@ -1,0 +1,62 @@
+target: scripts/build_primer.py
+tests:
+- tests.test_lint_primer
+- tests.test_packaging
+mutants:
+- id: clip-off-by-one
+  old: "else s[:n - 1] + \"\u2026\""
+  new: "else s[:n] + \"\u2026\""
+- id: clip-limit
+  old: return s if len(s) <= n else
+  new: return s if len(s) < n else
+- id: core-filter
+  old: if g.get("core")
+  new: if True
+- id: kind-order
+  old: '{"system": 0, "env": 1, "tool": 2, "concept": 3}'
+  new: '{"system": 3, "env": 1, "tool": 2, "concept": 0}'
+- id: alpha-order
+  old: str(g["term"]).lower()))
+  new: str(g["term"]).lower()[::-1]))
+- id: budget-env
+  old: os.environ.get("PRIMER_BUDGET") or cfg.get("primer_budget")
+  new: cfg.get("primer_budget") or os.environ.get("PRIMER_BUDGET")
+- id: budget-strict
+  old: 'if len(out) <= budget: break'
+  new: 'if len(out) < budget: break'
+- id: shrink-steps
+  old: 'for n in (120, 100, 85, 70):'
+  new: 'for n in (120,):'
+- id: over-flag
+  old: return out, len(out) > budget
+  new: return out, False
+- id: access-dropped
+  old: 'if cfg.get("access"):'
+  new: 'if False:'
+- id: skills-dropped
+  old: 'if skills: L.append'
+  new: 'if False: L.append'
+- id: skill-arrow
+  old: "(f\" \u2192 `{g['skill']}`\" if g.get(\"skill\") else \"\")"
+  new: '""'
+- id: org-default
+  old: cfg.get("org", "your org")
+  new: cfg.get("org", "x")
+- id: role-dropped
+  old: (f" ({role})." if role else ".")
+  new: '"."'
+- id: repos-root
+  old: '(f" Repos: `{cfg[''repos_root'']}/<repo>`." if cfg.get("repos_root") else "")'
+  new: '""'
+- id: routes-dropped
+  old: 'for r in cfg.get("routes") or []: L.append'
+  new: 'for r in []: L.append'
+- id: style-missing-ok
+  old: style = open(sp).read().strip() if os.path.exists(sp) else ""
+  new: style = open(sp).read().strip()
+- id: main-writes
+  old: open(os.path.join(B, "PRIMER.md"), "w").write(out)
+  new: pass
+- id: default-dir
+  old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")

@@ -1,0 +1,17 @@
+- id: vpn
+  label: VPN
+  cmd:
+  - sh
+  - -c
+  - ifconfig | grep -q 'inet 10\.' && echo up
+  okWhen: stdoutNonEmpty
+  fix: connect the VPN
+- id: docker
+  label: Docker
+  cmd:
+  - docker
+  - info
+  - --format
+  - '{{.ServerVersion}}'
+  okWhen: stdoutNonEmpty
+  fix: start Docker

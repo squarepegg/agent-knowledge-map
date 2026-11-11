@@ -1,0 +1,18 @@
+# Example: platform-infra. Copy over a brain with `brain.py init --example platform-infra`, then replace the invented content with yours.
+org: Acme Platform
+role: 'platform engineering: Kubernetes, Terraform, GitOps, on-call'
+repos_root: ~/infra
+primer_budget: 8500
+routes:
+- need: an alert fired or a service is down
+  use: '`incident_brief`-style flow: `brain.py search <service>`, `facts/severity-definitions.md`, then the service runbook'
+- need: how to change infrastructure
+  use: '`facts/terraform-via-atlantis.md` and `facts/argocd-sync-waves.md`'
+- need: cluster access
+  use: '`facts/eks-access-sso.md`'
+- need: what changed recently
+  use: '`git log` in `infra-live` and `gitops`; Argo CD history'
+access:
+- 'EKS: `kubectl --context prod-eks` with `aws sso login --profile prod`; read-only unless the task says otherwise.'
+- Terraform applies only through Atlantis on PRs; never run `terraform apply` locally against prod.
+- Production changes to apps go through PRs to the `gitops` repo.

@@ -1,0 +1,4 @@
+# Golden checks per skill (scripts/golden_skills.py): pins = substrings the skill must keep, max_chars = size budget.
+- skill: brain
+  pins: ["Never write secrets", "Inbox compaction", "Eval delta rule", "Definition of done for a new script"]
+  max_chars: 14000

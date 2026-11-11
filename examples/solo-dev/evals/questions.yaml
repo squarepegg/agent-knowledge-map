@@ -1,0 +1,47 @@
+# Evals for the solo-dev example (run: python scripts/eval_run.py examples/solo-dev/evals/questions.yaml after `init --example solo-dev`)
+- id: brew
+  q: brew command not found on a new Mac
+  run:
+    search: brew command not found
+  expect:
+  - /opt/homebrew
+  tier: must
+  first_line: dotfiles-bootstrap
+- id: secrets
+  q: How do I run something that needs an API key?
+  run:
+    search: secrets op run
+  expect:
+  - op run
+  tier: must
+- id: identity
+  q: Why is my commit using the wrong email?
+  run:
+    search: git identity email
+  expect:
+  - includeIf
+  tier: must
+  first_line: git-identity
+- id: blog
+  q: How do I deploy the blog?
+  run:
+    search: blog deploy rsync
+  expect:
+  - make deploy
+  tier: must
+  first_line: blog-deploy-rsync
+- id: backup
+  q: When did I last test a restore?
+  run:
+    search: restic restore quarter
+  expect:
+  - every quarter
+  tier: must
+  first_line: backups-restic
+- id: in-flight
+  q: What is in flight?
+  run:
+    search: portfolio site
+  expect:
+  - Rebuild the portfolio site
+  tier: must

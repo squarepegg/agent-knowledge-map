@@ -1,0 +1,26 @@
+- term: Atlantis
+  kind: tool
+  one_liner: Applies Terraform from PR comments; the only sanctioned way to change infra
+  repos:
+  - infra-live
+  core: true
+- term: Argo CD
+  kind: tool
+  one_liner: GitOps controller that syncs app and platform manifests from the gitops repo
+  repos:
+  - gitops
+  core: true
+- term: IRSA
+  kind: concept
+  one_liner: 'IAM Roles for Service Accounts: pods assume AWS roles via the cluster OIDC provider'
+  repos:
+  - infra-live
+- term: prod-eks
+  kind: env
+  one_liner: Production EKS cluster; kubectl context and SSO profile are both named prod
+  repos: []
+- term: Sync wave
+  kind: concept
+  one_liner: 'Argo CD ordering annotation: CRDs -2, operators -1, config 0, apps 1+'
+  repos:
+  - gitops

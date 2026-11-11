@@ -1,0 +1,28 @@
+target: scripts/mutation_check.py
+tests:
+- tests.test_mutation_check
+mutants:
+- id: stale-ignored
+  old: 'if src.count(m["old"]) != 1: stale.append'
+  new: 'if False: stale.append'
+- id: baseline-ignored
+  old: 'if not base_ok:'
+  new: 'if False:'
+- id: survivor-inverted
+  old: 'if ok: survivors.append(m["id"])'
+  new: 'if not ok: survivors.append(m["id"])'
+- id: exit-ignores-survivors
+  old: return not survivors and not stale
+  new: return not stale
+- id: exit-ignores-stale
+  old: return not survivors and not stale
+  new: return not survivors
+- id: git-copied
+  old: SKIP_COPY = {".git", ".cache", "node_modules", "digests"}
+  new: SKIP_COPY = {".cache"}
+- id: env-wrong
+  old: '"BRAIN_DIR": tmp'
+  new: '"BRAIN_DIR": ROOT'
+- id: home-leak
+  old: '"BRAIN_DIR": tmp, "HOME": tmp,'
+  new: '"BRAIN_DIR": tmp,'

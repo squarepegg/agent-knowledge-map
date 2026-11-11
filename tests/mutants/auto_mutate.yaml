@@ -1,0 +1,207 @@
+mutants:
+- id: cmp-eq
+  new: 'ast.Eq: ast.Eq, ast.NotEq: ast.Eq,'
+  old: 'ast.Eq: ast.NotEq, ast.NotEq: ast.Eq,'
+- id: cmp-lt
+  new: 'ast.Lt: ast.Gt, ast.LtE: ast.Gt, ast.Gt: ast.LtE, ast.GtE: ast.Lt,'
+  old: 'ast.Lt: ast.GtE, ast.LtE: ast.Gt, ast.Gt: ast.LtE, ast.GtE: ast.Lt,'
+- id: cmp-in
+  new: 'ast.In: ast.In, ast.NotIn: ast.In,'
+  old: 'ast.In: ast.NotIn, ast.NotIn: ast.In,'
+- id: cmp-is
+  new: 'ast.Is: ast.Is, ast.IsNot: ast.Is}'
+  old: 'ast.Is: ast.IsNot, ast.IsNot: ast.Is}'
+- id: main-guard
+  new: and n.test.left.id == "__nam__"
+  old: and n.test.left.id == "__name__"
+- id: main-skip
+  new: '        if isinstance'
+  old: "        if _is_main_guard(node): return\n        if isinstance"
+- id: docstring-skip
+  new: ''
+  old: '        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant): return   # docstrings / bare strings
+
+    '
+- id: single-op
+  new: 'if type(node.ops[0]) in CMP:'
+  old: 'if len(node.ops) == 1 and type(node.ops[0]) in CMP:'
+- id: bool-swap
+  new: a, b = (ast.And, ast.And) if isinstance(node.op, ast.And) else (ast.Or, ast.Or)
+  old: a, b = (ast.And, ast.Or) if isinstance(node.op, ast.And) else (ast.Or, ast.And)
+- id: bin-add
+  new: a, b = (ast.Add, ast.Add) if isinstance(node.op, ast.Add) else (ast.Sub, ast.Sub)
+  old: a, b = (ast.Add, ast.Sub) if isinstance(node.op, ast.Add) else (ast.Sub, ast.Add)
+- id: bin-only-addsub
+  new: 'if True:'
+  old: 'if isinstance(node.op, (ast.Add, ast.Sub)):'
+- id: not-remove
+  new: 'if False: self.hit("not:remove"'
+  old: 'if isinstance(node.op, ast.Not): self.hit("not:remove"'
+- id: if-negate
+  new: '            pass'
+  old: '            self.hit("if:negate", node, lambda: setattr(node, "test", ast.copy_location(ast.UnaryOp(op=ast.Not(), operand=node.test), node.test)))'
+- id: if-main-guard
+  new: "        if True:\n            self.hit(\"if:negate\""
+  old: "        if not _is_main_guard(node):\n            self.hit(\"if:negate\""
+- id: ret-none-skip
+  new: 'if True:'
+  old: 'if node.value is not None and not (isinstance(node.value, ast.Constant) and node.value.value is None):'
+- id: ret-none-value
+  new: setattr(node, "value", node.value)
+  old: setattr(node, "value", ast.copy_location(ast.Constant(value=None), node.value))
+- id: const-true
+  new: 'if v is True: self.hit("const:True->False", node, lambda: setattr(node, "value", True))'
+  old: 'if v is True: self.hit("const:True->False", node, lambda: setattr(node, "value", False))'
+- id: const-false
+  new: 'elif v is False: self.hit("const:False->True", node, lambda: setattr(node, "value", False))'
+  old: 'elif v is False: self.hit("const:False->True", node, lambda: setattr(node, "value", True))'
+- id: index-error
+  new: 'if idx > w.n: raise IndexError'
+  old: 'if idx >= w.n: raise IndexError'
+- id: pick-sorted
+  new: return list(random.Random(seed).sample(range(total), n)) if total > n else list(range(total))
+  old: return sorted(random.Random(seed).sample(range(total), n)) if total > n else list(range(total))
+- id: pick-seed
+  new: random.Random(0).sample
+  old: random.Random(seed).sample
+- id: pick-all
+  new: if total > n + 1 else list(range(total))
+  old: if total > n else list(range(total))
+- id: tm-word
+  new: rf"{re.escape(stem)}", text
+  old: rf"\b{re.escape(stem)}\b", text
+- id: tm-prefix
+  new: 'if not (f.endswith(".py")) or f in CONTRACT_TESTS: continue'
+  old: 'if not (f.startswith("test_") and f.endswith(".py")) or f in CONTRACT_TESTS: continue'
+- id: tm-sorted
+  new: 'for f in reversed(sorted(os.listdir(d))) if os.path.isdir(d) else []:'
+  old: 'for f in sorted(os.listdir(d)) if os.path.isdir(d) else []:'
+- id: tm-name
+  new: out.append(f)
+  old: out.append("tests." + f[:-3])
+- id: score-nomods
+  new: pass
+  old: 'if not mods: return {**base, "note": "no test module references this script"}'
+- id: score-baseline
+  new: '    pass
+
+    '
+  old: '    if not ok: return {**base, "score": None, "note": f"baseline fails in a clean copy: {out[-300:]}"}
+
+    '
+- id: score-killed-inv
+  new: return mc.run_copy(apply_mutation(src, i), target, cmd)[0]
+  old: return not mc.run_copy(apply_mutation(src, i), target, cmd)[0]
+- id: score-exc
+  new: '        except Exception: return False'
+  old: '        except Exception: return True   # a mutant that cannot even run counts as killed'
+- id: score-round
+  new: round(killed / max(1, len(chosen)), 1)
+  old: round(killed / len(chosen), 3) if chosen else 0.0
+- id: score-surv-line
+  new: 'surv = [{"line": cand[i][1], "op": cand[i][0]} for i, k in zip(chosen, res) if k]'
+  old: 'surv = [{"line": cand[i][1], "op": cand[i][0]} for i, k in zip(chosen, res) if not k]'
+- id: score-total
+  new: '"total": len(cand), "killed": killed,'
+  old: '"total": len(chosen), "killed": killed,'
+- id: reg-tol
+  new: 'elif v["score"] < r["score"] - 2 * tolerance - 1e-9:'
+  old: 'elif v["score"] < r["score"] - tolerance - 1e-9:'
+- id: reg-tol-zero
+  new: 'elif v["score"] < r["score"] - 1e-9:'
+  old: 'elif v["score"] < r["score"] - tolerance - 1e-9:'
+- id: reg-new
+  new: '        if r is None: bad.append((k, None, v.get("score"), "unrecorded")); continue
+
+    '
+  old: '        if r is None: continue
+
+    '
+- id: reg-none
+  new: 'if v.get("score") is None: pass'
+  old: 'if v.get("score") is None: bad.append((k, r["score"], None, v.get("note", "no score")))'
+- id: gf-comment
+  new: if l.strip()] if os.path.exists(p) else []
+  old: if l.strip() and not l.startswith("#")] if os.path.exists(p) else []
+- id: main-check-missing
+  new: pass
+  old: 'if "--check" in a and not os.path.exists(rec_path): print("no tests/mutants/legacy_scores.json: run --update first"); return 2'
+- id: main-check-exit
+  new: return 0
+  old: return 1 if bad else 0
+- id: main-update-exit
+  new: print(f"wrote {rec_path}"); return 1
+  old: print(f"wrote {rec_path}"); return 0
+- id: main-surv-cap
+  new: now[s]["survivors"] = r["survivors"]
+  old: now[s]["survivors"] = r["survivors"][:15]
+- id: main-regression-msg
+  new: print(f"{k}
+  old: print(f"REGRESSION {k}
+- id: main-opt-default
+  new: mx, seed, jobs = opt("--max", 3), opt("--seed", 1), opt("--jobs", 4)
+  old: mx, seed, jobs = opt("--max", 30), opt("--seed", 1), opt("--jobs", 4)
+- id: main-opt-seed
+  new: mx, seed, jobs = opt("--max", 30), opt("--seed", 2), opt("--jobs", 4)
+  old: mx, seed, jobs = opt("--max", 30), opt("--seed", 1), opt("--jobs", 4)
+- id: contract-tests-used
+  new: ': continue'
+  old: ' or f in CONTRACT_TESTS: continue'
+- id: contract-set-empty
+  new: CONTRACT_TESTS = set()
+  old: CONTRACT_TESTS = {"test_contracts_safety.py"}
+- id: int-aug
+  new: "    def visit_AugAssign(self, node):\n        self.generic_visit(node)"
+  old: "    def visit_AugAssign(self, node):\n        self.int_hit(node.value); self.generic_visit(node)"
+- id: int-cmp
+  new: ''
+  old: '        for x in [node.left, *node.comparators]: self.int_hit(x)
+
+    '
+- id: int-cmp-left
+  new: 'for x in [*node.comparators]: self.int_hit(x)'
+  old: 'for x in [node.left, *node.comparators]: self.int_hit(x)'
+- id: int-cmp-right
+  new: 'for x in [node.left]: self.int_hit(x)'
+  old: 'for x in [node.left, *node.comparators]: self.int_hit(x)'
+- id: int-bin
+  new: ''
+  old: '        for x in (node.left, node.right): self.int_hit(x)
+
+    '
+- id: int-bin-right
+  new: 'for x in (node.left,): self.int_hit(x)'
+  old: 'for x in (node.left, node.right): self.int_hit(x)'
+- id: int-bin-left
+  new: 'for x in (node.right,): self.int_hit(x)'
+  old: 'for x in (node.left, node.right): self.int_hit(x)'
+- id: int-ret
+  new: '        self.generic_visit(node)'
+  old: "            self.int_hit(node.value)\n        self.generic_visit(node)"
+- id: int-value
+  new: 'self.hit("const:int+1", node, lambda: setattr(node, "value", v))'
+  old: 'self.hit("const:int+1", node, lambda: setattr(node, "value", v + 1))'
+- id: int-type
+  new: 'if isinstance(node, ast.Constant) and isinstance(node.value, int):'
+  old: 'if isinstance(node, ast.Constant) and type(node.value) is int:'
+- id: explicit-ignored
+  new: explicit = []
+  old: explicit = [x for x in a if x.startswith(("scripts/", "skills/")) and x.endswith(".py")]
+- id: explicit-prefix
+  new: x.startswith(("scripts/",))
+  old: x.startswith(("scripts/", "skills/"))
+- id: explicit-suffix
+  new: and x.endswith(".pyc")]
+  old: and x.endswith(".py")]
+- id: merge-dropped
+  new: if False else {}
+  old: if explicit and os.path.exists(rec_path) else {}
+- id: merge-order
+  new: '{**now, **merged}'
+  old: '{**merged, **now}'
+- id: merge-needs-explicit
+  new: if os.path.exists(rec_path) else {}
+  old: if explicit and os.path.exists(rec_path) else {}
+target: scripts/auto_mutate.py
+tests:
+- tests.test_auto_mutate

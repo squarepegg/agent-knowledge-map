@@ -1,0 +1,124 @@
+target: scripts/lint_facts.py
+tests:
+- tests.test_lint_primer
+- tests.test_brain
+- tests.test_recall
+- tests.test_packaging
+mutants:
+- id: absolute-off
+  old: 'if not fm.get("absolutes_ok"):'
+  new: 'if False:'
+- id: absolute-optout-ignored
+  old: 'if not fm.get("absolutes_ok"):'
+  new: 'if True:'
+- id: absolute-boundary
+  old: r'\b(always|never|guaranteed|impossible|every single)\b'
+  new: r'(always|never|guaranteed|impossible|every single)'
+- id: old-threshold
+  old: (today - va).days > 90
+  new: (today - va).days > 91
+- id: old-off
+  old: if not unver and va and (today - va).days > 90
+  new: if False
+- id: unver-threshold
+  old: (today - ra).days > 30
+  new: (today - ra).days > 31
+- id: unver-recorded
+  old: (("recorded_at",) if unver else ("verified_at",))
+  new: (("verified_at",) if unver else ("verified_at",))
+- id: source-off
+  old: 'if not (fm.get("anchors") or fm.get("source") or fm.get("verify_by")):'
+  new: 'if False:'
+- id: source-anchors-only
+  old: fm.get("anchors") or fm.get("source") or fm.get("verify_by")
+  new: fm.get("anchors") or fm.get("source")
+- id: sha-strip
+  old: path = re.sub(r'^[0-9a-f]{6,40}:', '', path)
+  new: pass
+- id: since-default
+  old: va or '90 days ago'
+  new: va or '2099-01-01'
+- id: stale-off
+  old: 'if out: issues.append(f"STALE'
+  new: 'if False: issues.append(f"STALE'
+- id: anchor-missing-off
+  old: 'if not rp: issues.append(f"ANCHOR {rel}: repo not found locally: {repo}"); continue'
+  new: 'if not rp: continue'
+- id: ws-threshold
+  old: (today - up).days > 21
+  new: (today - up).days > 22
+- id: ws-blocked
+  old: fm.get("status") in ("active", "blocked")
+  new: fm.get("status") in ("active",)
+- id: ws-all-status
+  old: fm.get("status") in ("active", "blocked") and
+  new: ''
+- id: req-off
+  old: if str(r) not in probe_ids and not re.match
+  new: if False and not re.match
+- id: req-probes
+  old: if str(r) not in probe_ids and not re.match
+  new: if not re.match
+- id: secret-off
+  old: 'if SECRET.search(line): issues.append'
+  new: 'if False: issues.append'
+- id: secret-skip-dirs
+  old: 'if any(x in p for x in ("/digests/", "/drafts/", "/.cache/", "/tests/")): continue'
+  new: pass
+- id: skill-name
+  old: 'if fm.get("name") != name:'
+  new: 'if False:'
+- id: skill-desc-len
+  old: len(str(fm["description"])) > 1024
+  new: len(str(fm["description"])) > 1025
+- id: skill-desc-missing
+  old: if not fm.get("description") or
+  new: if False or
+- id: hard-codes
+  old: HARD = ("PARSE", "SECRET", "FIELD", "REQ")
+  new: HARD = ("PARSE", "SECRET", "FIELD")
+- id: strict-off
+  old: 'if "--strict" in sys.argv and hard: sys.exit(1)'
+  new: pass
+- id: unverified-skip
+  old: unver = fm.get("verified") is False
+  new: unver = False
+- id: instinct-off
+  old: 'if "instincts" in (fm.get("tags") or []):'
+  new: 'if False:'
+- id: instinct-prefix
+  old: if line.startswith("- **When**") and not
+  new: if line.startswith("- **when**") and not
+- id: instinct-do
+  old: '"**do**" in line and re.search'
+  new: True and re.search
+- id: instinct-evidence
+  old: _Evidence:_.*\b(high|medium|low)\b\.
+  new: _Evidence:_.*\b(high|medium|low)\b
+- id: instinct-conf
+  old: \b(high|medium|low)\b\.
+  new: \b(high|medium)\b\.
+- id: instinct-line
+  old: 'issues.append(f"INSTINCT {rel}:{i}:'
+  new: 'issues.append(f"INSTINCT {rel}:{i+1}:'
+- id: unver-count
+  old: unverified_facts[0] += unver
+  new: pass
+- id: unver-reset
+  old: issues = []; unverified_facts[0] = 0
+  new: issues = []
+- id: anchor-flag
+  old: 'if "--anchor-repos" in sys.argv:'
+  new: 'if False:'
+- id: anchor-sorted
+  old: return sorted(r for r in rs if r)
+  new: return [r for r in rs if r]
+- id: anchor-empty
+  old: for r in rs if r)
+  new: for r in rs)
+- id: anchor-split
+  old: str(a).partition("@")[0]
+  new: str(a)
+- id: default-dir
+  old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")

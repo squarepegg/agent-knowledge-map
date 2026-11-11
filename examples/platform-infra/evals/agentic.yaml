@@ -1,0 +1,29 @@
+# Agentic questions for the platform-infra example: answerable only from the brain (invented facts). scripts/agentic_ab.py platform-infra compares an agent with and without it.
+- id: tf-apply
+  q: How do I apply a Terraform change to production?
+  expect:
+  - - atlantis apply
+  max_words: 90
+- id: waves
+  q: What sync wave numbers do CRDs and operators use in Argo CD?
+  expect:
+  - - '-2'
+  - - '-1'
+  max_words: 90
+- id: sso
+  q: kubectl says Unable to connect to the server. What should I check first?
+  expect:
+  - - sso
+  max_words: 90
+- id: sev1-updates
+  q: How often must we update the status page during a SEV1?
+  expect:
+  - - 30 minutes
+    - every 30
+    - 30 min
+  max_words: 90
+- id: irsa
+  q: What must the IAM trust policy subject look like for an IRSA role?
+  expect:
+  - - system:serviceaccount
+  max_words: 90

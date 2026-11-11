@@ -1,0 +1,4 @@
+# Environment probes run by scripts/session_start.py. okWhen: exit0 | stdoutNonEmpty. Capabilities in capabilities.yaml `requires:` use these ids.
+- {id: gh, label: GitHub CLI, cmd: [gh, auth, status], okWhen: exit0, fix: "gh auth login"}
+- {id: docker, label: Docker, cmd: [docker, info, --format, "{{.ServerVersion}}"], okWhen: stdoutNonEmpty, fix: "start Docker"}
+# - {id: vpn, label: VPN, cmd: [sh, -c, "ifconfig | grep -q 'inet 10\\.'  && echo up"], okWhen: stdoutNonEmpty, fix: "connect the VPN"}

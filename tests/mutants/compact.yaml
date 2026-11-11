@@ -1,0 +1,55 @@
+target: scripts/compact.py
+tests:
+- tests.test_capture
+mutants:
+- id: parse-body-start
+  old: 'out.append({"kind": m.group(1), "title": m.group(2).strip(), "body": text[m.end():end].strip()})'
+  new: 'out.append({"kind": m.group(1), "title": m.group(2).strip(), "body": text[m.start():end].strip()})'
+- id: parse-last-end
+  old: end = ms[i + 1].start() if i + 1 < len(ms) else len(text)
+  new: end = ms[i + 1].start() if i + 1 < len(ms) else m.end()
+- id: dup-min-token
+  old: if len(t) > 2]
+  new: if len(t) > 0]
+- id: dup-all-tokens
+  old: 'if all(any(w.startswith(q) for w in ts) for q in want): return'
+  new: 'if any(any(w.startswith(q) for w in ts) for q in want): return'
+- id: dup-inbox
+  old: if not d[0].startswith("inbox/")]
+  new: ']'
+- id: fact-unverified
+  old: 'verified: false\nrecorded_at'
+  new: 'verified: true\nrecorded_at'
+- id: fact-confidence
+  old: 'confidence: low'
+  new: 'confidence: high'
+- id: fact-body-fallback
+  old: item['body'] or item['title']
+  new: item['body']
+- id: route-fact-kind
+  old: 'if k in ("gotcha", "fact"):'
+  new: 'if k in ("gotcha",):'
+- id: route-decision-date
+  old: f"decisions/{today}-{slug(t)}.md"
+  new: f"decisions/{slug(t)}.md"
+- id: route-capability-file
+  old: return "capabilities.yaml", f"add entry
+  new: return "facts/x.md", f"add entry
+- id: write-dup
+  old: if write and newf and not dup and
+  new: if write and newf and
+- id: write-overwrite
+  old: 'and not os.path.exists(os.path.join(brain_dir, newf)):'
+  new: ':'
+- id: write-flag
+  old: if write and newf
+  new: if newf
+- id: archive-dest
+  old: f"{brain_dir}/inbox/processed/{os.path.basename(f)}"
+  new: f"{brain_dir}/inbox/{os.path.basename(f)}x"
+- id: cli-archive
+  old: 'if "--archive" in argv:'
+  new: 'if False:'
+- id: cli-write
+  old: plan(write="--write" in argv)
+  new: plan(write=True)

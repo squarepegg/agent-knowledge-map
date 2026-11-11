@@ -1,0 +1,135 @@
+target: scripts/init_brain.py
+tests:
+- tests.test_capture
+- tests.test_examples
+- tests.test_recall
+mutants:
+- id: cfg-no-write
+  old: open(p, "w").write(text); return acts
+  new: return acts
+- id: cfg-noop-report
+  old: 'if new != text: acts.append'
+  new: 'if True: acts.append'
+- id: ex-fact
+  old: '"facts/example-fact.md", "workstreams/example-workstream"'
+  new: '"facts/example-factx.md", "workstreams/example-workstream"'
+- id: ex-key
+  old: ("glossary.yaml", "term", "Example Service")
+  new: ("glossary.yaml", "term", "Other")
+- id: ex-empty
+  old: if kept else "[]\n"
+  new: if kept else ""
+- id: claude-idempotent
+  old: 'if line not in cur.splitlines():'
+  new: 'if True:'
+- id: claude-newline
+  old: ("" if not cur or cur.endswith("\n") else "\n")
+  new: '""'
+- id: skill-link-overwrite
+  old: 'if os.path.isdir(src) and not os.path.lexists(dst):'
+  new: 'if os.path.isdir(src):'
+- id: hook-dup
+  old: 'if not any(h.get("command") == cmd for g in groups for h in g.get("hooks", [])):'
+  new: 'if True:'
+- id: hook-merge
+  old: hooks = settings.setdefault("hooks", {})
+  new: hooks = settings["hooks"] = {}
+- id: hook-stop-cmd
+  old: '"Stop": f"{py}/capture_hook.py stop"'
+  new: '"Stop": f"{py}/capture_hook.py prompt"'
+- id: settings-write
+  old: 'if acts and any(a.startswith("hook") for a in acts): json.dump'
+  new: 'if False: json.dump'
+- id: examples-flag
+  old: 'if "--no-examples" in argv:'
+  new: 'if True:'
+- id: claude-flag
+  old: 'if "--claude" in argv: acts'
+  new: 'if True: acts'
+- id: exit-code
+  old: return 0 if r.returncode == 0 else 1
+  new: return 0
+- id: next-hint
+  old: 'if "--claude" not in argv: print'
+  new: 'if False: print'
+- id: ex-unknown-guard
+  old: 'if name not in examples_available(brain): raise SystemExit'
+  new: 'if False: raise SystemExit'
+- id: ex-list-sorted
+  old: return sorted(n for n in os.listdir(d) if os.path.isdir(os.path.join(d, n)))
+  new: return [n for n in os.listdir(d) if os.path.isdir(os.path.join(d, n))]
+- id: ex-dirs-only
+  old: if os.path.isdir(os.path.join(d, n)))
+  new: if True)
+- id: ex-force
+  old: 'elif force or _same(d_path, os.path.join(pristine, rel)): action = "replaced"'
+  new: 'elif _same(d_path, os.path.join(pristine, rel)): action = "replaced"'
+- id: ex-pristine
+  old: 'elif force or _same(d_path, os.path.join(pristine, rel)): action = "replaced"'
+  new: 'elif force: action = "replaced"'
+- id: ex-always-overwrite
+  old: 'elif force or _same(d_path, os.path.join(pristine, rel)): action = "replaced"'
+  new: 'elif True: action = "replaced"'
+- id: ex-kept-msg
+  old: acts.append(f"kept your {rel} (use --force to overwrite)"); continue
+  new: continue
+- id: ex-evals-copied
+  old: 'if rel.startswith("evals" + os.sep): continue'
+  new: pass
+- id: ex-placeholder-lists
+  old: 'acts += remove_examples(brain)   # placeholders (also those left inside files you kept)'
+  new: pass
+- id: ex-cli-force
+  old: apply_example(B, opt("--example"), "--force" in argv)
+  new: apply_example(B, opt("--example"), True)
+- id: ex-cli-flag
+  old: 'if "--example" in argv: acts'
+  new: 'if False: acts'
+- id: stamp-off
+  old: data = _stamp(rel, open(s_path, "rb").read(), today)
+  new: data = open(s_path, "rb").read()
+- id: stamp-scope
+  old: 'if not (rel.startswith(("facts" + os.sep, "workstreams" + os.sep)) and rel.endswith(".md")): return data'
+  new: 'if not rel.endswith(".md"): return data'
+- id: stamp-facts-only
+  old: rel.startswith(("facts" + os.sep, "workstreams" + os.sep))
+  new: rel.startswith(("facts" + os.sep,))
+- id: stamp-ws-only
+  old: rel.startswith(("facts" + os.sep, "workstreams" + os.sep))
+  new: rel.startswith(("workstreams" + os.sep,))
+- id: stamp-key
+  old: 'rb"^(verified_at|updated): .*$"'
+  new: 'rb"^(verified_at): .*$"'
+- id: stamp-updated-key
+  old: 'rb"^(verified_at|updated): .*$"'
+  new: 'rb"^(updated): .*$"'
+- id: stamp-today-arg
+  old: today = today or datetime.date.today().isoformat()
+  new: today = "2000-01-01"
+- id: stamp-idempotent
+  old: 'elif open(d_path, "rb").read() == data: continue'
+  new: 'elif False: continue'
+- id: al-dedupe
+  old: if e.get(key) not in have]
+  new: '] if True else []'
+- id: al-append
+  old: with open(dst, "a") as f
+  new: with open(dst, "w") as f
+- id: al-missing-src
+  old: 'if not os.path.exists(src): return 0'
+  new: pass
+- id: al-count
+  old: return len(add)
+  new: return len(new)
+- id: al-key-recall
+  old: ("recall.yaml", "q", "recall query(ies)")
+  new: ("recall.yaml", "id", "recall query(ies)")
+- id: al-label
+  old: '"eval question(s)"'
+  new: '"eval"'
+- id: al-recall-dropped
+  old: ("recall.yaml", "q", "recall query(ies)")
+  new: ("recall.yaml", "q", "recall query(ies)") if False else ("questions.yaml", "id", "eval question(s)")
+- id: al-note-if
+  old: 'if n: acts.append(f"appended {n} {label}")'
+  new: acts.append(f"appended {n} {label}")

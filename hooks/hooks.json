@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "SessionStart": [ { "hooks": [ { "type": "command", "command": "BRAIN_DIR=\"${BRAIN_DIR:-$HOME/.agents/brain}\" python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/session_start.py\"" } ] } ],
+    "Stop": [ { "hooks": [ { "type": "command", "command": "BRAIN_DIR=\"${BRAIN_DIR:-$HOME/.agents/brain}\" python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/capture_hook.py\" stop" } ] } ],
+    "UserPromptSubmit": [ { "hooks": [ { "type": "command", "command": "BRAIN_DIR=\"${BRAIN_DIR:-$HOME/.agents/brain}\" python3 \"${CLAUDE_PLUGIN_ROOT}/scripts/capture_hook.py\" prompt" } ] } ]
+  }
+}

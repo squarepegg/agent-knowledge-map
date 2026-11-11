@@ -1,0 +1,15 @@
+# Example: solo-dev. Copy over a brain with `brain.py init --example solo-dev`, then replace the invented content with yours.
+org: Me
+role: 'independent developer: side projects, writing, tooling'
+repos_root: ~/projects
+primer_budget: 8500
+routes:
+- need: how a side project is built or deployed
+  use: '`brain.py search <project>`; per-project facts are tagged with its name'
+- need: my machine setup and dotfiles
+  use: '`facts/dotfiles-bootstrap.md`'
+- need: where a secret or key lives
+  use: '`facts/secrets-1password-cli.md` (never paste values)'
+access:
+- Secrets come from the 1Password CLI (`op run -- <cmd>`); nothing secret in dotfiles or this brain.
+- 'Backups: `restic` to an off-site bucket nightly; restore drill each quarter.'

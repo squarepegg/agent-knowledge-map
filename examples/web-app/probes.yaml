@@ -1,0 +1,16 @@
+- id: gh
+  label: GitHub CLI
+  cmd:
+  - gh
+  - auth
+  - status
+  okWhen: exit0
+  fix: gh auth login
+- id: vpn
+  label: VPN
+  cmd:
+  - sh
+  - -c
+  - ifconfig | grep -q 'inet 10\.' && echo up
+  okWhen: stdoutNonEmpty
+  fix: connect the VPN

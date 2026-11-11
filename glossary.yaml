@@ -1,0 +1,6 @@
+# term / kind: system|concept|env|tool|team / one_liner (<=140 chars) / repos / skill? / core: true => listed in the primer
+- term: Example Service
+  kind: system
+  one_liner: Replace me. One line on what it is and who owns it.
+  repos: [example-service]
+  core: true

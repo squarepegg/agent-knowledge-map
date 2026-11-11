@@ -1,0 +1,65 @@
+target: scripts/capture_hook.py
+tests:
+- tests.test_capture
+mutants:
+- id: regex-wrong
+  old: that'?s (wrong|not (right|correct|true))
+  new: that'?s (wrongx|not (right|correct|true))
+- id: regex-actually
+  old: actually[, ]+(it|that|the|we|you)\b
+  new: actually
+- id: regex-case
+  old: 're.I)
+
+    MAXLEN'
+  new: '0)
+
+    MAXLEN'
+- id: tool-types
+  old: ("tool_use", "toolCall")
+  new: ("tool_use",)
+- id: tool-nested
+  old: m = e.get("message") if isinstance(e.get("message"), dict) else e
+  new: m = e
+- id: threshold-edge
+  old: return count_tools(transcript_text) >= threshold
+  new: return count_tools(transcript_text) > threshold
+- id: active-ignored
+  old: 'if payload.get("stop_hook_active") or marker_exists: return False'
+  new: 'if marker_exists: return False'
+- id: marker-ignored
+  old: 'if payload.get("stop_hook_active") or marker_exists: return False'
+  new: 'if payload.get("stop_hook_active"): return False'
+- id: note-ignored
+  old: 'if "brain.py note" in transcript_text: return False'
+  new: pass
+- id: marker-not-written
+  old: open(marker, "w").write("1")
+  new: pass
+- id: sid-unsanitised
+  old: re.sub(r"[^A-Za-z0-9_-]", "", str(payload.get("session_id") or ""))
+  new: str(payload.get("session_id") or "")
+- id: decision
+  old: '{"decision": "block", "reason": REASON}'
+  new: '{"decision": "approve", "reason": REASON}'
+- id: secret-guard
+  old: 'if not is_correction(text) or brain.SECRET.search(text): return None'
+  new: 'if not is_correction(text): return None'
+- id: truncate
+  old: '[:MAXLEN]'
+  new: '[:MAXLEN * 3]'
+- id: whitespace
+  old: re.sub(r"\s+", " ", text).strip()
+  new: text
+- id: prompt-no-filter
+  old: if not is_correction(text) or
+  new: if False or
+- id: cli-stop
+  old: 'if out: print(json.dumps(out))'
+  new: pass
+- id: cli-usage
+  old: 'else: print(__doc__); return 2'
+  new: 'else: return 0'
+- id: default-threshold
+  old: os.environ.get("CAPTURE_THRESHOLD", 8)
+  new: os.environ.get("CAPTURE_THRESHOLD", 1)

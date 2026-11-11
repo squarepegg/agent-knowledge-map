@@ -1,0 +1,17 @@
+# Retrieval recall for the solo-dev example: symptom-style queries -> the file that should come back (scripts/recall_eval.py)
+- q: brew not found on a fresh laptop
+  expect: facts/dotfiles-bootstrap
+- q: api keys without putting them in a file
+  expect: facts/secrets-1password-cli
+- q: commits show my work email on a personal repo
+  expect: facts/git-identity-per-directory
+- q: pip refuses to install, externally managed environment
+  expect: facts/python-uv-per-project
+- q: deleted file is still on the server after publishing a post
+  expect: facts/blog-deploy-rsync
+- q: how do I know my backups actually work
+  expect: facts/backups-restic
+- q: which site am I rebuilding
+  expect: workstreams/portfolio-site
+- q: steps for setting up a new machine
+  expect: facts/dotfiles-bootstrap

@@ -1,0 +1,9 @@
+# Retrieval recall (scripts/recall_eval.py): what a person types when stuck -> the file that should come back. Phrase as symptoms, not as titles.
+- q: how do prod changes get released
+  expect: facts/example-fact
+  needs:
+  - facts/example-fact.md
+- q: what work is in progress
+  expect: workstreams/example-workstream
+  needs:
+  - workstreams/example-workstream/STATE.md

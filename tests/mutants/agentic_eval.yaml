@@ -1,0 +1,38 @@
+target: scripts/agentic_eval.py
+tests:
+- tests.test_evals
+- tests.test_agentic_ab
+mutants:
+- id: group-any
+  old: groups = all(any(
+  new: groups = any(any(
+- id: pats-any
+  old: pats = all(re.search
+  new: pats = any(re.search
+- id: forbid-off
+  old: and not forbidden, "concise"
+  new: ', "concise"'
+- id: concise-lt
+  old: <= item.get("max_words", 150)
+  new: < item.get("max_words", 150)
+- id: case-sensitive
+  old: low = text.lower()
+  new: low = text
+- id: stdin-ignored
+  old: input=prompt, capture_output
+  new: capture_output
+- id: ask-cwd-arg
+  old: "cwd=cwd or B, env=env)\n    else"
+  new: "cwd=B, env=env)\n    else"
+- id: ask-cmd-arg
+  old: cmd = cmd or os.environ.get("AGENTIC_CMD")
+  new: cmd = os.environ.get("AGENTIC_CMD")
+- id: ask-env-arg
+  old: "cwd=cwd or B, env=env)\n    else"
+  new: "cwd=cwd or B)\n    else"
+- id: ask-env-stdin
+  old: "cwd=cwd or B, env=env)\n    return"
+  new: "cwd=cwd or B)\n    return"
+- id: timeout-crash
+  old: '    except subprocess.TimeoutExpired: return ""'
+  new: '    except KeyError: return ""'

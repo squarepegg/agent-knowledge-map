@@ -1,0 +1,35 @@
+# Agentic questions for the data-team example: answerable only from the brain (invented facts). scripts/agentic_ab.py data-team compares an agent with and without it.
+- id: sla
+  q: By what time must daily_core finish, and when does the executive dashboard refresh?
+  expect:
+  - - 07:00
+  - - 07:30
+  max_words: 90
+- id: late-events
+  q: How late can mobile events arrive, and when are daily rollups final?
+  expect:
+  - - '72'
+    - 3 day
+  - - T+3
+    - D+3
+    - D-4
+    - 4 days
+    - fourth day
+  max_words: 90
+- id: join-key
+  q: Which column should I join on instead of raw email addresses?
+  expect:
+  - - email_hash
+  max_words: 90
+- id: backfill-flag
+  q: Which setting should an Airflow backfill use so it does not exhaust warehouse slots?
+  expect:
+  - - max-active-runs
+    - max_active_runs
+  max_words: 90
+- id: lookback
+  q: Which variable controls how many days incremental models re-read on each run, and what is its default?
+  expect:
+  - - lookback_days
+  - - '3'
+  max_words: 90

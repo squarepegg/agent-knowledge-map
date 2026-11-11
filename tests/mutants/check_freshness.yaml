@@ -1,0 +1,10 @@
+target: scripts/check_freshness.py
+tests: [tests.test_ops_scripts]
+mutants:
+- {id: edge-exclusive, old: 'age <= e["budget_hours"]', new: 'age < e["budget_hours"]'}
+- {id: missing-ok, old: 'age is not None and age <=', new: 'age is None or age <='}
+- {id: naive-tz, old: 'return t if t.tzinfo else t.replace(tzinfo=datetime.timezone.utc)', new: 'return t'}
+- {id: key-default, old: 'e.get("key", "synced")', new: 'e.get("key", "at")'}
+- {id: hours, old: '/ 3600', new: '/ 60'}
+- {id: nondict, old: 'if not isinstance(obj, dict): return None', new: 'pass'}
+- {id: exit-all, old: 'return 0 if all(r[3] for r in res) else 1', new: 'return 0 if any(r[3] for r in res) else 1'}

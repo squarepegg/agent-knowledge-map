@@ -1,0 +1,7 @@
+{
+  "name": "ai-brain",
+  "owner": { "name": "squarepegg" },
+  "plugins": [
+    { "name": "ai-brain", "source": "./", "description": "Agent memory skill + session-start and capture hooks. Needs a brain directory (BRAIN_DIR, default ~/.agents/brain): clone this repo there and run `brain.py init`." }
+  ]
+}

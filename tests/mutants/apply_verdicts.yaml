@@ -1,0 +1,131 @@
+mutants:
+- id: repo-git
+  new: os.path.isdir(os.path.join(root, r))
+  old: os.path.isdir(os.path.join(root, r, ".git"))
+- id: repo-any
+  new: return all(os.path.isdir
+  old: return any(os.path.isdir
+- id: setfm-drop
+  new: pass
+  old: 'for k in drop: fm.pop(k, None)'
+- id: setfm-update
+  new: '    pass
+
+    '
+  old: '    fm.update(updates)
+
+    '
+- id: setfm-order
+  new: order = []
+  old: order = ["title", "repos", "tags", "anchors", "verified", "verified_at", "recorded_at", "verify_by", "confidence", "scope", "source"]
+- id: setfm-extra
+  new: '    pass
+
+    '
+  old: '    out.update({k: v for k, v in fm.items() if k not in out})
+
+    '
+- id: setfm-body
+  new: + ""
+  old: + text[m.end():]
+- id: setfm-unicode
+  new: allow_unicode=False, width=200
+  old: allow_unicode=True, width=200
+- id: setfm-width
+  new: width=20
+  old: width=200
+- id: setfm-sortkeys
+  new: sort_keys=True, allow_unicode
+  old: sort_keys=False, allow_unicode
+- id: confirmed-verified
+  new: '{"verified": False, "verified_at": TODAY, "anchors": anchors}'
+  old: '{"verified": True, "verified_at": TODAY, "anchors": anchors}'
+- id: confirmed-today
+  new: '"verified_at": "x"'
+  old: '"verified_at": TODAY'
+- id: confirmed-drop
+  new: drop=("recorded_at",)
+  old: drop=("recorded_at", "verify_by")
+- id: confirmed-drop-rec
+  new: drop=("verify_by",)
+  old: drop=("recorded_at", "verify_by")
+- id: anchor-at
+  new: if repo_exists(a.split("@")[0])
+  old: if "@" in a and repo_exists(a.split("@")[0])
+- id: anchor-exists
+  new: if "@" in a
+  old: if "@" in a and repo_exists(a.split("@")[0])
+- id: anchor-dedupe
+  new: 'list(((fm.get("anchors") or []) + '
+  old: 'list(dict.fromkeys((fm.get("anchors") or []) + '
+- id: anchor-keep-old
+  new: list(dict.fromkeys(([] ) + [a
+  old: list(dict.fromkeys((fm.get("anchors") or []) + [a
+- id: partly-conf
+  new: 't = set_fm(t, {"verify_by": "human"})'
+  old: 't = set_fm(t, {"confidence": "low", "verify_by": "human"})'
+- id: partly-verifyby
+  new: '{"confidence": "low"}'
+  old: '{"confidence": "low", "verify_by": "human"}'
+- id: partly-kinds
+  new: 'elif v in ("partly",):'
+  old: 'elif v in ("partly", "contradicted"):'
+- id: partly-kinds2
+  new: 'elif v in ("contradicted",):'
+  old: 'elif v in ("partly", "contradicted"):'
+- id: partly-icon
+  new: '{''x''}'
+  old: "{'\u26A0\uFE0F partly wrong' if v == 'partly' else '\u274C contradicted'}"
+- id: partly-fix
+  new: proposed fix:\n\n
+  old: proposed fix:\n\n{r.get('fix','')}
+- id: partly-evidence
+  new: '- proposed'
+  old: '- evidence: {r.get(''evidence'','''')}\n- proposed'
+- id: unver-by
+  new: '{"verify_by": "human"}'
+  old: '{"verify_by": r.get("verify_by") or "human"}'
+- id: unver-default
+  new: r.get("verify_by")
+  old: r.get("verify_by") or "human"
+- id: unver-review
+  new: "            pass; (f\"### \u2753 {title}"
+  old: "            review.append(f\"### \u2753 {title}"
+- id: skip-missing
+  new: 'if not os.path.exists(p): continue'
+  old: 'if not os.path.exists(p): print("skip missing", p); continue'
+- id: skip-continue
+  new: print("skip missing", p)
+  old: print("skip missing", p); continue
+- id: basename
+  new: r["file"]
+  old: os.path.basename(r["file"])
+- id: wrapper
+  new: results = res
+  old: results = res["results"] if isinstance(res, dict) else res
+- id: counts
+  new: counts[v] = 1
+  old: counts[v] = counts.get(v, 0) + 1
+- id: review-header
+  new: '"# Facts ({TODAY})\n\nTick one box'
+  old: '"# Facts needing your call ({TODAY})\n\nTick one box'
+- id: review-count
+  new: '"| review items:", 0'
+  old: '"| review items:", len(review)'
+- id: title-fallback
+  new: .get("title", "")
+  old: .get("title", r["file"])
+- id: write
+  new: '        pass
+
+    '
+  old: '        open(p, "w").write(t)
+
+    '
+- id: default-dir
+  old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")
+target: scripts/apply_verdicts.py
+tests:
+- tests.test_apply_verdicts
+- tests.test_packaging

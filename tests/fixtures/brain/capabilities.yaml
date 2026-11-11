@@ -1,0 +1,7 @@
+# id / enables / requires [vpn|gh|docker|aws:<profile>|kube:<ctx>|mcp:<server>] / how / skill? / examples / gotchas?
+- id: example-capability
+  enables: Replace me - what this lets an agent do
+  requires: []
+  how: "command or tool call"
+  examples:
+    - "a question this answers"

@@ -1,0 +1,63 @@
+target: scripts/tour_lint.py
+tests: [tests.test_tour_lint]
+mutants:
+- {id: badline-skip, old: "if not m: bad.append(i); continue", new: "if not m: continue"}
+- {id: kind-off, old: 'if w.kind not in KINDS:', new: 'if False:'}
+- {id: dupid-off, old: 'if w.id in seen:', new: 'if False:'}
+- {id: dangling-off, old: 'if l not in ids: f.append', new: 'if False: f.append'}
+- {id: selflink-off, old: 'elif l == w.id:', new: 'elif False:'}
+- {id: nowhy-off, old: "if not re.search(r'[A-Za-z]{3}', w.why)", new: "if False"}
+- {id: owner-off, old: 'if w.kind == "Question" and not', new: 'if False and not'}
+- {id: noneed-off, old: 'and "Need" not in kinds_linked', new: 'and False'}
+- {id: noproof-off, old: 'and not kinds_linked & {"Test", "Risk", "Question"}', new: 'and False'}
+- {id: proof-no-question, old: '{"Test", "Risk", "Question"}', new: '{"Test", "Risk"}'}
+- {id: norepo-off, old: 'except LookupError: f.append(("NOREPO"', new: 'except LookupError: f.append(("XX"'}
+- {id: broken-off, old: 'if content is None: f.append(("BROKEN"', new: 'if content is None: f.append(("XX"'}
+- {id: eof-off, old: 'if w.start and w.start > len(', new: 'if False and w.start > len('}
+- {id: unpinned-off, old: 'if not w.hash: f.append(("UNPINNED"', new: 'if not w.hash: f.append(("XX"'}
+- {id: stale-off, old: 'if hash_text(content, w.start, w.end, w.heading) != w.hash:', new: 'if False:'}
+- {id: stale-inverted, old: 'if hash_text(content, w.start, w.end, w.heading) != w.hash:', new: 'if hash_text(content, w.start, w.end, w.heading) == w.hash:'}
+- {id: copied-threshold, old: 'len(why) >= 40', new: 'len(why) >= 0'}
+- {id: copied-off, old: 'and why in tgt', new: 'and False'}
+- {id: orphan-no-cycle-guard, old: 'l not in seen_ and l != w.id', new: 'l != w.id'}
+- {id: orphan-off, old: 'if w.kind != "Need" and not reaches(w)', new: 'if False'}
+- {id: missingkind-off, old: 'if wps and k not in kinds', new: 'if False'}
+- {id: draft-off, old: 'if status == "draft"', new: 'if False'}
+- {id: hash-no-rstrip, old: 'l.rstrip() for l in lines', new: 'l for l in lines'}
+- {id: hash-range-off, old: 'lines = lines[start - 1:(end or start)]', new: 'pass'}
+- {id: hash-range-offbyone, old: 'lines[start - 1:(end or start)]', new: 'lines[start:(end or start)]'}
+- {id: pin-skip-missing, old: 'if content is None or w.exists: continue', new: 'if w.exists: continue'}
+- {id: reader-gitless, old: 'os.path.join(p, ".git")', new: 'os.path.join(p, "")'}
+- {id: sort-off, old: 'return sorted(f, key=lambda x: (x[1], x[0], x[2]))', new: 'return f'}
+- {id: sec-fence-off, old: 'if l.lstrip().startswith("```"): fence = not fence', new: 'pass'}
+- {id: sec-fence2-off, old: 'if lines[j].lstrip().startswith("```"): f2 = not f2', new: 'pass'}
+- {id: sec-level-lt, old: 'len(m2.group(1)) <= lvl', new: 'len(m2.group(1)) < lvl'}
+- {id: sec-level-any, old: 'len(m2.group(1)) <= lvl', new: 'True'}
+- {id: sec-nocase, old: "_norm(m.group(2)) == want", new: "m.group(2) == heading"}
+- {id: anch-multi-ok, old: 'if len(sec) == 1 else None', new: 'if sec else None'}
+- {id: hash-none-passthrough, old: 'return None if t is None else hashlib', new: 'return hashlib'}
+- {id: ambiguous-off, old: 'if n > 1: f.append(("AMBIGUOUS"', new: 'if n > 99: f.append(("AMBIGUOUS"'}
+- {id: heading-missing-off, old: 'if n == 0: f.append(("BROKEN"', new: 'if n == 99: f.append(("BROKEN"'}
+- {id: exists-hashes, old: 'if w.exists: continue', new: 'pass'}
+- {id: pin-exists, old: 'if content is None or w.exists: continue', new: 'if content is None: continue'}
+- {id: pin-heading-missing, old: "if h is None: continue\n        w.hash = h", new: "w.hash = h"}
+- {id: render-heading, old: 'rng = f"#h:{w.heading}" if w.heading else', new: 'rng = ""  if w.heading else'}
+- {id: render-exists, old: 'else "#exists" if w.exists else', new: 'else "" if w.exists else'}
+- {id: parse-heading, old: '(m["h"] or "").strip(), bool(m["ex"])', new: '"", bool(m["ex"])'}
+- {id: parse-exists, old: '(m["h"] or "").strip(), bool(m["ex"])', new: '(m["h"] or "").strip(), False'}
+- {id: copied-uses-heading, old: "anchored_text(content, w.start, w.end, w.heading)), _norm(w.why)", new: "anchored_text(content, w.start, w.end)), _norm(w.why)"}
+- {id: stale-uses-heading, old: "hash_text(content, w.start, w.end, w.heading) != w.hash", new: "hash_text(content, w.start, w.end) != w.hash"}
+- {id: pinned-oldest, old: 'if content is not None and hash_text(content, w.start, w.end, w.heading) == w.hash: return sha', new: 'if content is not None and hash_text(content, w.start, w.end, w.heading) == w.hash: pass; continue; return sha'}
+- {id: pinned-none-ok, old: 'if content is not None and hash_text', new: 'if hash_text'}
+- {id: prompt-no-choices, old: 'Decide: (a) your why still holds -> run --pin; (b)', new: 'Decide: (b)'}
+- {id: prompt-no-diff, old: 'diff = "\n".join(difflib.unified_diff(', new: 'diff = "x"; _ = ("\n".join(difflib.unified_diff('}
+- {id: prompt-unknown-pin, old: 'if pinned is None: body', new: 'if False: body'}
+- {id: review-exists, old: 'if w.exists or not w.hash: continue', new: 'if not w.hash: continue'}
+- {id: review-unpinned, old: 'if w.exists or not w.hash: continue', new: 'if w.exists: continue'}
+- {id: review-all, old: 'in (None, w.hash): continue', new: 'in (None,): continue'}
+- {id: review-empty-msg, old: '"\n".join(out) or "No stale waypoints."', new: '"\n".join(out)'}
+- {id: history-limit, old: 'f"-n{limit}"', new: '"-n1"'}
+- {id: bt-fire-off, old: 'if prev is not None and h != prev: fires += 1', new: 'if False: fires += 1'}
+- {id: bt-first-fires, old: 'if prev is not None and h != prev: fires += 1', new: 'if h != prev: fires += 1'}
+- {id: bt-skip-none, old: "if h is None: continue\n        n += 1", new: "n += 1"}
+- {id: bt-count, old: "n += 1\n        if prev is not None", new: "if prev is not None"}

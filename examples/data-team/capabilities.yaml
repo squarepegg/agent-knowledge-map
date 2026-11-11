@@ -1,0 +1,22 @@
+- id: query-warehouse
+  enables: Run read-only SQL against the warehouse
+  requires:
+  - mcp:warehouse
+  how: warehouse MCP `query` tool as role analyst_ro; prefer the metric layer views over raw tables
+  examples:
+  - what was revenue yesterday by country?
+  gotchas: See facts/orders-timestamps-utc.md before grouping by date
+- id: airflow-status
+  enables: Check whether a DAG run is late or failed
+  requires:
+  - vpn
+  how: Airflow UI (VPN) or `airflow dags list-runs -d daily_core`
+  examples:
+  - is daily_core green?
+- id: dbt-run
+  enables: Build or test a model
+  requires:
+  - docker
+  how: '`dbt build --select <model>+` in the dbt container; CI runs the same on every PR'
+  examples:
+  - rebuild fct_orders and its children

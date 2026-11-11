@@ -1,0 +1,13 @@
+- id: run-with-secrets
+  enables: Run a command with secrets injected
+  requires: []
+  how: '`op run --env-file=.env.tpl -- <command>`'
+  examples:
+  - start the dev server with its API keys
+- id: new-machine
+  enables: Set up a fresh Mac
+  requires:
+  - gh
+  how: clone dotfiles and run bootstrap.sh
+  examples:
+  - I just got a new laptop

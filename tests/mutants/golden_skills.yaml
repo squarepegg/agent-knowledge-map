@@ -1,0 +1,18 @@
+mutants:
+- {id: name-check-off, old: 'if fm.get("name") != name:', new: 'if False:'}
+- {id: desc-limit-off-by-one, old: 'len(desc) > DESC_MAX:', new: 'len(desc) > DESC_MAX + 1:'}
+- {id: pin-inverted, old: 'if pin not in text:', new: 'if pin in text:'}
+- {id: budget-inclusive, old: 'len(text) > limit', new: 'len(text) >= limit'}
+- {id: budget-zero-ignored, old: 'if limit is not None and', new: 'if limit and'}
+- {id: allow-or, old: 'tok not in repos and tok not in allowed', new: 'tok not in repos or tok not in allowed'}
+- {id: repeats-not-deduped, old: 'sorted(set(rx.findall(text)))', new: 'sorted(rx.findall(text))'}
+- {id: prefix-not-escaped, old: 're.escape(p) for p in pre', new: 'p for p in pre'}
+- {id: prefix-env-ignored, old: 'os.environ.get("GOLDEN_REPO_PREFIXES", "")', new: '""'}
+- {id: empty-changed-means-all, old: 'if changed is not None: cfg', new: 'if changed: cfg'}
+- {id: exit-always-zero, old: 'return 1 if any(res.values()) else 0', new: 'return 0'}
+- {id: duplicates-allowed, old: 'len(set(names)) != len(names)', new: 'False'}
+- {id: non-dict-frontmatter, old: 'return (fm if isinstance(fm, dict) else {}), text[end + 4:]', new: 'return fm, text[end + 4:]'}
+- {id: bad-ref-ignored, old: 'if out.returncode != 0:', new: 'if False:'}
+target: scripts/golden_skills.py
+tests:
+- tests.test_golden_skills

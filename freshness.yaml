@@ -1,0 +1,2 @@
+# Generated catalogs and how old they may get. Each file is JSON with an ISO timestamp at `key`.
+# - {name: repo inventory, file: repos/repos.json, key: synced, budget_hours: 48}

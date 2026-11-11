@@ -1,0 +1,54 @@
+# Evals for the platform-infra example (run: python scripts/eval_run.py examples/platform-infra/evals/questions.yaml after `init --example platform-infra`)
+- id: change
+  q: How do I change infrastructure in prod?
+  run:
+    search: terraform atlantis apply
+  expect:
+  - atlantis apply
+  tier: must
+  first_line: terraform-via-atlantis
+- id: sso
+  q: kubectl says Unable to connect to the server
+  run:
+    search: kubectl unable to connect sso
+  expect:
+  - aws sso login
+  tier: must
+  first_line: eks-access-sso
+- id: waves
+  q: First sync fails with no matches for kind
+  run:
+    search: no matches for kind sync wave
+  expect:
+  - wave
+  tier: must
+- id: pdb
+  q: Draining a node never finishes
+  run:
+    search: drain PDB minAvailable
+  expect:
+  - PodDisruptionBudget
+  tier: must
+- id: irsa
+  q: Pod gets AccessDenied calling AWS
+  run:
+    search: IRSA AccessDenied trust policy
+  expect:
+  - system:serviceaccount
+  tier: must
+  first_line: irsa-trust
+- id: sev
+  q: What is a SEV1?
+  run:
+    search: SEV1 customer-facing outage
+  expect:
+  - SEV1
+  tier: must
+  first_line: severity-definitions
+- id: in-flight
+  q: What is in flight?
+  run:
+    search: EKS upgrade
+  expect:
+  - Upgrade EKS 1.30 to 1.31
+  tier: must

@@ -1,0 +1,22 @@
+- id: cluster-health
+  enables: Check pods, events and rollouts on a cluster
+  requires:
+  - vpn
+  - aws:prod
+  how: '`kubectl --context prod-eks get pods -A | grep -v Running`; events with `get events --sort-by=.lastTimestamp`'
+  examples:
+  - are any pods crash-looping?
+- id: plan-infra-change
+  enables: Propose an infrastructure change
+  requires:
+  - gh
+  how: PR to infra-live; `atlantis plan` output is the review artifact
+  examples:
+  - add a node group
+- id: app-rollout
+  enables: Change or roll back an application
+  requires:
+  - gh
+  how: PR to the gitops repo; Argo CD syncs; revert the PR to roll back
+  examples:
+  - pin the image tag for checkout

@@ -1,0 +1,149 @@
+target: scripts/agentic_ab.py
+tests:
+- tests.test_agentic_ab
+mutants:
+- id: quote-primer
+  old: .replace("{primer_file}", shlex.quote(primer_file))
+  new: .replace("{primer_file}", primer_file)
+- id: quote-tools
+  old: .replace("{tools}", shlex.quote(tools))
+  new: .replace("{tools}", tools)
+- id: tools-brain
+  old: BRAIN_TOOLS = "Bash,Read,Grep,Glob"
+  new: BRAIN_TOOLS = ""
+- id: baseline-tools
+  old: condition(cmd, nopr, "")
+  new: condition(cmd, nopr, BRAIN_TOOLS)
+- id: baseline-primer
+  old: condition(cmd, nopr, "")
+  new: condition(cmd, os.path.join(brain, "PRIMER.md"), "")
+- id: brain-cwd
+  old: BRAIN_TOOLS), brain, clean_env(brain))
+  new: BRAIN_TOOLS), empty, clean_env(brain))
+- id: gain-sign
+  old: '"gain": w - wo'
+  new: '"gain": wo - w'
+- id: with-count
+  old: w = sum(r["correct"] for r in with_)
+  new: w = sum(r["concise"] for r in with_)
+- id: without-count
+  old: wo = sum(r["correct"] for r in without)
+  new: wo = 0
+- id: answer-trunc
+  old: '"answer": text[:300]'
+  new: '"answer": text'
+- id: only-filter
+  old: if not only or i["id"] in only]
+  new: if True]
+- id: usage
+  old: 'if len(argv) < 2 or argv[1].startswith("--"): print(__doc__); return 2'
+  new: 'if False: pass'
+- id: cmd-env
+  old: opt("--cmd") or os.environ.get("AGENTIC_AB_CMD") or DEFAULT_CMD
+  new: opt("--cmd") or DEFAULT_CMD
+- id: cleanup
+  old: shutil.rmtree(os.path.dirname(brain), ignore_errors=True); shutil.rmtree(empty, ignore_errors=True)
+  new: pass
+- id: json
+  old: 'if opt("--json"): json.dump'
+  new: 'if False: json.dump'
+- id: primer-fail
+  old: 'if r.returncode: raise SystemExit("primer failed: " + r.stderr)'
+  new: pass
+- id: apply-example
+  old: acts = init_brain.apply_example(b, example)
+  new: acts = []
+- id: skip-git
+  old: shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "PRIMER.md", "status", ".cache", "metrics")
+  new: shutil.ignore_patterns("__pycache__")
+- id: env-keep-brain
+  old: if k not in ("BRAIN_DIR", "BRAIN_REPOS_ROOT")}
+  new: '}'
+- id: env-keep-root
+  old: if k not in ("BRAIN_DIR", "BRAIN_REPOS_ROOT")}
+  new: if k != "BRAIN_DIR"}
+- id: env-no-brain-dir
+  old: 'if brain: env["BRAIN_DIR"] = brain'
+  new: pass
+- id: env-baseline-gets-brain
+  old: empty, clean_env())
+  new: empty, clean_env(brain))
+- id: env-with-no-env
+  old: brain, clean_env(brain))
+  new: brain, None)
+- id: env-not-passed
+  old: "text = agentic_eval.ask(it[\"q\"], timeout=timeout, cmd=cmd, cwd=cwd, env=env)\n        if not text"
+  new: "text = agentic_eval.ask(it[\"q\"], timeout=timeout, cmd=cmd, cwd=cwd)\n        if not text"
+- id: baseline-cwd
+  old: run_condition(items, condition(cmd, nopr, ""), empty, clean_env())
+  new: run_condition(items, condition(cmd, nopr, ""), brain, clean_env())
+- id: default-no-claude-md
+  old: DEFAULT_CMD = ("CLAUDE_CODE_DISABLE_CLAUDE_MDS=1 claude -p
+  new: DEFAULT_CMD = ("claude -p
+- id: default-mcp
+  old: '"--strict-mcp-config --mcp-config'
+  new: '"--mcp-config'
+- id: timeout-default
+  old: os.environ.get("AGENTIC_TIMEOUT", 300)
+  new: os.environ.get("AGENTIC_TIMEOUT", 30)
+- id: timeout-env
+  old: int(os.environ.get("AGENTIC_TIMEOUT", 300))
+  new: '300'
+- id: timeout-passed
+  old: "text = agentic_eval.ask(it[\"q\"], timeout=timeout, cmd=cmd, cwd=cwd, env=env)\n        if not text"
+  new: "text = agentic_eval.ask(it[\"q\"], cmd=cmd, cwd=cwd, env=env)\n        if not text"
+- id: no-retry
+  old: 'if not text: text = agentic_eval.ask('
+  new: 'if False: text = agentic_eval.ask('
+- id: retry-always
+  old: 'if not text: text = agentic_eval.ask('
+  new: 'if True: text = agentic_eval.ask('
+- id: empty-flag
+  old: '"empty": not text,'
+  new: '"empty": False,'
+- id: empty-with-count
+  old: '"empty_with": sum(1 for r in with_ if r.get("empty"))'
+  new: '"empty_with": 0'
+- id: empty-without-count
+  old: '"empty_without": sum(1 for r in without if r.get("empty"))'
+  new: '"empty_without": 0'
+- id: warning-off
+  old: 'if s["empty_with"] or s["empty_without"]: print('
+  new: 'if False: print('
+- id: warning-only-with
+  old: 'if s["empty_with"] or s["empty_without"]:'
+  new: 'if s["empty_with"]:'
+- id: warning-only-without
+  old: 'if s["empty_with"] or s["empty_without"]:'
+  new: 'if s["empty_without"]:'
+- id: retry-env
+  old: 'if not text: text = agentic_eval.ask(it["q"], timeout=timeout, cmd=cmd, cwd=cwd, env=env)'
+  new: 'if not text: text = agentic_eval.ask(it["q"], timeout=timeout, cmd=cmd, cwd=cwd)'
+- id: retry-cwd
+  old: 'if not text: text = agentic_eval.ask(it["q"], timeout=timeout, cmd=cmd, cwd=cwd, env=env)'
+  new: 'if not text: text = agentic_eval.ask(it["q"], timeout=timeout, cmd=cmd, env=env)'
+- id: style-ignored
+  old: 'if style: shutil.copyfile(style, os.path.join(b, "style.md"))'
+  new: pass
+- id: style-after-primer
+  old: '    if style: shutil.copyfile(style, os.path.join(b, "style.md"))
+
+    '
+  new: '    pass
+
+    '
+- id: style-opt
+  old: build_brain(example, style=opt("--style"))
+  new: build_brain(example)
+- id: skip-flag
+  old: skip = "--no-baseline" in argv
+  new: skip = False
+- id: skip-always
+  old: skip = "--no-baseline" in argv
+  new: skip = True
+- id: skip-column
+  old: '("" if skip else f"   without:'
+  new: '("" if False else f"   without:'
+- id: skip-summary
+  old: 'print(f"{example}: with brain {s[''with_brain'']}/{s[''n'']}" + ("" if skip else'
+  new: 'print(f"{example}: with brain {s[''with_brain'']}/{s[''n'']}" + ("" if False else'

@@ -1,0 +1,20 @@
+- term: dotfiles
+  kind: system
+  one_liner: Repo with shell config, Brewfile and bootstrap script for any new machine
+  repos:
+  - dotfiles
+  core: true
+- term: blog
+  kind: system
+  one_liner: Static personal site; build with make, deploy with rsync
+  repos:
+  - blog
+  core: true
+- term: op
+  kind: tool
+  one_liner: 1Password CLI used to inject secrets at run time
+  repos: []
+- term: restic
+  kind: tool
+  one_liner: Encrypted off-site backups, nightly via launchd
+  repos: []

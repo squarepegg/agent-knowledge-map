@@ -1,0 +1,29 @@
+- term: Canary
+  kind: concept
+  one_liner: 10% traffic release held 15 minutes before full rollout; auto-rollback on 2x 5xx
+  repos:
+  - shop-web
+  - shop-api
+  core: true
+- term: Error budget
+  kind: concept
+  one_liner: 99.9% monthly availability objective; spent budget pauses feature work
+  repos:
+  - shop-api
+  core: true
+- term: Flag console
+  kind: tool
+  one_liner: Where feature flags are created and toggled per environment
+  repos:
+  - shop-web
+- term: Checkout
+  kind: system
+  one_liner: Cart, payment and order creation flow; the highest-revenue and most-tested path
+  repos:
+  - shop-web
+  - shop-api
+  core: true
+- term: Bastion
+  kind: env
+  one_liner: Jump host for read-only production database access
+  repos: []

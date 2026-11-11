@@ -1,0 +1,18 @@
+# Example: data-team. Copy over a brain with `brain.py init --example data-team`, then replace the invented content with yours.
+org: Acme Data
+role: 'analytics engineering: warehouse, dbt, Airflow, dashboards'
+repos_root: ~/work
+primer_budget: 8500
+routes:
+- need: why a metric or dashboard number looks wrong
+  use: '`brain.py search <metric>`, then facts tagged `warehouse`'
+- need: a pipeline failed or is late
+  use: skill `pipelines` and `facts/daily-core-sla.md`; Airflow UI via the VPN
+- need: who owns a table or metric
+  use: the `owner` column in the dbt catalog (`dbt docs`), then `glossary.yaml`
+- need: what changed in a model
+  use: '`git log` in `analytics-dbt` (anchored facts flag drift)'
+access:
+- 'Warehouse: read-only role `analyst_ro` via the warehouse MCP; writes only through dbt in CI.'
+- Airflow UI needs the VPN; `airflow dags backfill` runs only from the bastion.
+- Raw PII lives in schema `restricted` (audited); everything else is hashed.

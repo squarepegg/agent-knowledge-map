@@ -1,0 +1,18 @@
+# Example: web-app. Copy over a brain with `brain.py init --example web-app`, then replace the invented content with yours.
+org: Acme Shop
+role: 'product engineering: web storefront, API and checkout'
+repos_root: ~/code
+primer_budget: 8500
+routes:
+- need: something broke in production
+  use: skill `runbook` (on-call), `facts/error-budget-policy.md`, then the dashboards in the glossary
+- need: how to ship a change safely
+  use: '`facts/deploy-canary.md`, `facts/db-migrations-expand-contract.md`, `facts/feature-flags-default-off.md`'
+- need: a flaky test
+  use: '`facts/e2e-safari-flaky.md`'
+- need: who owns a service
+  use: '`CODEOWNERS` in the repo, then `glossary.yaml`'
+access:
+- Deploys run in GitHub Actions on merge to main; never from a laptop.
+- Secrets live in the vault (`vault kv get`); never in `.env` files committed or pasted.
+- Prod DB access is read-only through the bastion; writes go through migrations.

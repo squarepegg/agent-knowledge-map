@@ -1,0 +1,19 @@
+- id: rollback
+  enables: Roll production back to the previous version
+  requires:
+  - gh
+  how: '`gh workflow run rollback.yml -f version=<previous>`; watch the canary dashboard'
+  examples:
+  - checkout is erroring after the 14:10 deploy, roll back
+- id: prod-db-readonly
+  enables: Inspect production data
+  requires:
+  - vpn
+  how: ssh to the bastion, `psql` with the read-only role; never run writes
+  gotchas: 'Expand/contract migrations: see facts/db-migrations-expand-contract.md'
+- id: flag-toggle
+  enables: Turn a feature on or off without a deploy
+  requires: []
+  how: Flag console, environment prod, toggle, note the ticket
+  examples:
+  - disable the new cart banner

@@ -1,0 +1,6 @@
+# Agentic evals (scripts/agentic_eval.py). Needs AGENTIC_CMD. Each expect group = any-of; every group must hit.
+- id: deploy-path
+  q: "How do prod changes get deployed here? One sentence."
+  expect: [[gitops], [pull request, PR]]
+  forbid: ["kubectl apply is fine"]
+  max_words: 60

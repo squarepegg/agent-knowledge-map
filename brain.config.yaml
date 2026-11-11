@@ -1,0 +1,16 @@
+# Edit me. Read by scripts/build_primer.py to generate PRIMER.md (the always-loaded router).
+org: "Acme Co"                  # shown in the primer header
+role: "platform engineering"    # one-liner about what you do
+repos_root: "~/projects"        # where your repos are cloned (anchors in facts resolve here; also BRAIN_REPOS_ROOT)
+primer_budget: 8500             # max chars for PRIMER.md; attention is the scarce resource
+# "Need -> use" routing rows. Point at your own tools, skills, MCP servers, runbooks.
+routes:
+  - need: "how-to, gotchas, verified facts, capabilities"
+    use: "`scripts/brain.py search <keywords>`"
+  - need: "in-flight work state"
+    use: "`workstreams/<slug>/STATE.md`"
+  - need: "past decisions and why"
+    use: "`decisions/`"
+# Short always-useful access notes (cluster names, auth commands, read-only rules).
+access:
+  - "Example: staging cluster via `kubectl --context staging`; prod changes go through the gitops repo."

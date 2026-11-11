@@ -1,0 +1,32 @@
+target: scripts/harness_check.py
+tests: [tests.test_harness_check]
+mutants:
+- {id: claude-fallback, old: 'for n in ("AGENTS.md", "CLAUDE.md")', new: 'for n in ("AGENTS.md",)'}
+- {id: agents-first, old: 'for n in ("AGENTS.md", "CLAUDE.md")', new: 'for n in ("CLAUDE.md", "AGENTS.md")'}
+- {id: ins-exists, old: '("AGENTS.md/CLAUDE.md exists", bool(ins))', new: '("AGENTS.md/CLAUDE.md exists", True)'}
+- {id: cmd-word-boundary, old: 'r"\b(test|pytest|gradlew|npm|make|cargo|dotnet)\b"', new: 'r"(test|pytest|gradlew|npm|make|cargo|dotnet)"'}
+- {id: cmd-gradlew, old: '|gradlew|npm|make|cargo|dotnet)\b"', new: '|npm|make|cargo|dotnet)\b"'}
+- {id: case-sensitive, old: 're.search(w, t, re.I)', new: 're.search(w, t)'}
+- {id: has-all, old: 'return any(re.search', new: 'return all(re.search'}
+- {id: state-handoff-word, old: 'has(ins, "STATE.md", "progress", "handoff")', new: 'has(ins, "STATE.md", "progress")'}
+- {id: state-docs, old: '(repo / "docs").is_dir() or (repo / "openspec").is_dir()', new: '(repo / "docs").is_dir() and (repo / "openspec").is_dir()'}
+- {id: entry-justfile, old: '"Makefile", "justfile", "package.json"', new: '"Makefile", "package.json"'}
+- {id: entry-tox, old: '"pyproject.toml", "tox.ini"', new: '"pyproject.toml"'}
+- {id: ci-glob-yaml, old: '.glob("*.y*ml")', new: '.glob("*.yml")'}
+- {id: ci-words, old: 'has(ci, r"\b(test|pytest|gradlew|unittest|npm)\b")', new: 'bool(ci)'}
+- {id: scope-never, old: '"scope", "do not", "never")', new: '"scope", "do not")'}
+- {id: owners-readme, old: 'or has(readme, "owner"))', new: ')'}
+- {id: owners-root, old: 'or (repo / "CODEOWNERS").exists()', new: ''}
+- {id: evidence-word, old: 'has(ins, "evidence", "end of session"', new: 'has(ins, "end of session"'}
+- {id: score-weight, old: 'sum(sub.values()) * 10', new: 'sum(sub.values()) * 9'}
+- {id: unreadable, old: 'except Exception: return ""', new: 'except FileNotFoundError: return ""'}
+- {id: min-default, old: 'mn, dirs, skip = 60, [], False', new: 'mn, dirs, skip = 61, [], False'}
+- {id: all-needs-git, old: 'if (p / ".git").exists()]', new: ']'}
+- {id: sort-by-name, old: 'key=lambda r: (r["score"], r["repo"])', new: 'key=lambda r: r["score"]'}
+- {id: sort-desc, old: 'key=lambda r: (r["score"], r["repo"])', new: 'key=lambda r: (-r["score"], r["repo"])'}
+- {id: missing-dir, old: 'return 2, f"harness_check: not a directory: {d}"', new: 'continue'}
+- {id: exit-threshold, old: 'any(r["score"] < mn for r in res)', new: 'any(r["score"] <= mn for r in res)'}
+- {id: missing-first-three, old: 'r["missing"][:3]', new: 'r["missing"][:2]'}
+- {id: json-flag, old: 'return dirs, mn, "--all" in a, "--json" in a', new: 'return dirs, mn, "--all" in a, False'}
+- {id: init-sh, old: '("init.sh (green-baseline check before editing)", (repo / "init.sh").exists())', new: '("init.sh (green-baseline check before editing)", True)'}
+- {id: min-skip, old: 'skip = True', new: 'skip = False'}

@@ -1,0 +1,192 @@
+target: scripts/brain.py
+tests:
+- tests.test_brain
+- tests.test_capture
+- tests.test_packaging
+mutants:
+- id: secret-guard-off
+  old: 'if SECRET.search(title + body): raise'
+  new: 'if False: raise'
+- id: kind-guard-off
+  old: 'if kind not in KINDS: raise'
+  new: 'if False: raise'
+- id: ws-overwrite
+  old: 'if os.path.exists(p): raise SystemExit(f"exists: {p}")'
+  new: pass
+- id: decision-overwrite
+  old: 'if os.path.exists(p): raise SystemExit(f"exists: {p} (decisions'
+  new: 'if False: raise SystemExit(f"exists: {p} (decisions'
+- id: processed-searched
+  old: 'if "/processed/" in f: continue'
+  new: pass
+- id: ws-date-wrong
+  old: SLUG=slug, TITLE=title or slug, DATE=str(datetime.date.today()))
+  new: SLUG=slug, TITLE=title or slug, DATE="x")
+- id: decision-date-wrong
+  old: DATE=str(datetime.date.today()))); return p
+  new: DATE="x")); return p
+- id: lower-terms
+  old: qs = sorted({stem(t) for t in (x.lower() for x in terms) if t})
+  new: qs = sorted({stem(t) for t in terms if t})
+- id: blank-lines
+  old: 'if line.strip(): docs.append'
+  new: docs.append
+- id: corpus-truncates
+  old: docs.append((os.path.relpath(f, brain), i, line.strip()))
+  new: docs.append((os.path.relpath(f, brain), i, line.strip()[:200]))
+- id: snip-width
+  old: SNIP = 200
+  new: SNIP = 400
+- id: snip-window
+  old: max(0, min(at) - 60)
+  new: max(0, min(at))
+- id: snip-first
+  old: min(at) - 60
+  new: max(at) - 60
+- id: snip-nohit
+  old: if at else 0
+  new: if at else 5
+- id: snip-lead-ellipsis
+  old: "(\"\u2026\" if start else \"\")"
+  new: '""'
+- id: snip-trail-ellipsis
+  old: "(\"\u2026\" if start + SNIP < len(text) else \"\")"
+  new: '""'
+- id: snip-case
+  old: low = text.lower(); at = [low.find(t.lower())
+  new: low = text; at = [low.find(t.lower())
+- id: qw-stop-off
+  old: kept = [t for t in raw if len(t) > 2 and t not in STOP]
+  new: kept = [t for t in raw if len(t) > 2]
+- id: qw-min-len
+  old: len(t) > 2 and t not in STOP
+  new: len(t) > 1 and t not in STOP
+- id: qw-fallback
+  old: return list(dict.fromkeys(kept or raw))
+  new: return list(dict.fromkeys(kept))
+- id: qw-dedupe
+  old: return list(dict.fromkeys(kept or raw))
+  new: return kept or raw
+- id: stop-what
+  old: what why when
+  new: why when
+- id: stop-the
+  old: STOP = frozenset("the and
+  new: STOP = frozenset("and
+- id: cli-query-words
+  old: search(query_words(" ".join(r)))
+  new: search(r)
+- id: stem-ing
+  old: 'if len(w) > 6 and w.endswith("ing"): w = w[:-3]'
+  new: 'if len(w) > 4 and w.endswith("ing"): w = w[:-3]'
+- id: stem-ed
+  old: 'elif len(w) > 5 and w.endswith("ed"): w = w[:-2]'
+  new: 'elif len(w) > 3 and w.endswith("ed"): w = w[:-2]'
+- id: stem-ies
+  old: 'if len(w) > 4 and w.endswith("ies"): return w[:-3] + "y"'
+  new: 'if len(w) > 4 and w.endswith("ies"): return w[:-1]'
+- id: stem-s
+  old: 'if len(w) > 3 and w.endswith("s") and not w.endswith("ss"): return w[:-1]'
+  new: 'if len(w) > 2 and w.endswith("s") and not w.endswith("ss"): return w[:-1]'
+- id: stem-ss
+  old: 'and not w.endswith("ss"): return w[:-1]'
+  new: '): return w[:-1]'
+- id: stem-query
+  old: qs = sorted({stem(t) for t in
+  new: qs = sorted({t for t in
+- id: stem-index
+  old: 'def tokens(text): return [stem(t) for t in TOKEN.findall(text.lower())]'
+  new: 'def tokens(text): return TOKEN.findall(text.lower())'
+- id: qw-raw
+  old: raw = TOKEN.findall(query.lower())
+  new: raw = tokens(query)
+- id: prefix-to-substring
+  old: 'def has(ts, q): return any(w.startswith(q) for w in ts)'
+  new: 'def has(ts, q): return any(q in w for w in ts)'
+- id: head-weight-value
+  old: 'HEAD_WEIGHT = 1.5 '
+  new: 'HEAD_WEIGHT = 0.0 '
+- id: head-weight-sign
+  old: hl[0][0] - HEAD_WEIGHT * sum
+  new: hl[0][0] + HEAD_WEIGHT * sum
+- id: head-lines-zero
+  old: 'HEAD_LINES = 12 '
+  new: 'HEAD_LINES = 0 '
+- id: head-lines-wide
+  old: 'HEAD_LINES = 12 '
+  new: 'HEAD_LINES = 13 '
+- id: head-lines-narrow
+  old: 'HEAD_LINES = 12 '
+  new: 'HEAD_LINES = 11 '
+- id: head-no-title
+  old: ^(title:|name:|description:|tags:|aliases:|# )
+  new: ^(name:|description:|tags:|aliases:|# )
+- id: head-no-name
+  old: ^(title:|name:|description:|tags:|aliases:|# )
+  new: ^(title:|description:|tags:|aliases:|# )
+- id: head-no-description
+  old: ^(title:|name:|description:|tags:|aliases:|# )
+  new: ^(title:|name:|tags:|aliases:|# )
+- id: head-no-tags
+  old: ^(title:|name:|description:|tags:|aliases:|# )
+  new: ^(title:|name:|description:|aliases:|# )
+- id: head-no-aliases
+  old: ^(title:|name:|description:|tags:|aliases:|# )
+  new: ^(title:|name:|description:|tags:|# )
+- id: head-no-heading
+  old: ^(title:|name:|description:|tags:|aliases:|# )
+  new: ^(title:|name:|description:|tags:|aliases:)
+- id: head-anywhere
+  old: HEAD_LINE = re.compile(r"^(
+  new: HEAD_LINE = re.compile(r"(^|.*)(
+- id: head-no-basename
+  old: 'tokens(" ".join([os.path.basename(p)] + '
+  new: 'tokens(" ".join(["x"] + '
+- id: head-full-path
+  old: '[os.path.basename(p)] +'
+  new: '[p] +'
+- id: idf-lines
+  old: 'w = {q: math.log(1 + n / (1 + df[q])) for q in qs}'
+  new: 'w = {q: math.log(1 + len(docs) / (1 + df[q])) for q in qs}'
+- id: idf-smoothing
+  old: math.log(1 + n / (1 + df[q]))
+  new: math.log(1 + n / df[q]) if df[q] else 0.0
+- id: df-files-not-lines
+  old: 'df = {q: sum(1 for ls in files.values() if any(has(ts, q) for _, _, ts in ls)) for q in qs}'
+  new: 'df = {q: sum(1 for ls in files.values() for _, _, ts in ls if has(ts, q)) for q in qs}'
+- id: best-line-sum
+  old: "-round(sum(w[q] for q in qs if has(ts, q)), 9), i, t) for i, t, ts in ls if any(has(ts, q) for q in qs))\n        if not hl: continue"
+  new: "-round(sum(w[q] for q in qs if has(ts, q)), 9), i, t) for i, t, ts in ls if any(has(ts, q) for q in qs))\n        if not hl: continue\n        hl[0] = (sum(x[0] for x in hl), hl[0][1], hl[0][2])"
+- id: zero-score-lines
+  old: for i, t, ts in ls if any(has(ts, q) for q in qs))
+  new: for i, t, ts in ls)
+- id: per-file-cap
+  old: hl[:PER_FILE]))
+  new: hl))
+- id: per-file-size
+  old: 'PER_FILE = 3 '
+  new: 'PER_FILE = 4 '
+- id: path-tiebreak
+  old: 'ranked.sort(key=lambda r: (r[0], r[1]))'
+  new: 'ranked.sort(key=lambda r: r[0])'
+- id: limit-off-by-one
+  old: return out[:limit]
+  new: return out[:limit + 1]
+- id: line-order
+  old: hl = sorted((-round(
+  new: hl = sorted(reverse=True, iterable=(-round(
+- id: empty-file-skip
+  old: 'if not hl: continue'
+  new: pass
+- id: stem-in-query
+  old: qs = sorted({stem(t) for t in (x.lower() for x in terms) if t})
+  new: qs = sorted({t for t in (x.lower() for x in terms) if t})
+- id: stop-now
+  old: very much".split()
+  new: very".split()
+- id: stop-still
+  old: now still been
+  new: now been
+- id: default-dir
+  old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")

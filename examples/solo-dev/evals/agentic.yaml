@@ -1,0 +1,30 @@
+# Agentic questions for the solo-dev example: answerable only from the brain (invented facts). scripts/agentic_ab.py solo-dev compares an agent with and without it.
+- id: brew
+  q: Why does brew say command not found on a new Apple Silicon Mac?
+  expect:
+  - - /opt/homebrew
+  max_words: 90
+- id: secrets
+  q: How do I run a command that needs API keys without storing them in files?
+  expect:
+  - - op run
+  max_words: 90
+- id: blog-deploy
+  q: How is the blog deployed, and what does --delete do?
+  expect:
+  - - rsync
+  - - delete
+    - removes
+  max_words: 90
+- id: backup
+  q: What time do the nightly backups run, and how often should I test a restore?
+  expect:
+  - - 02:30
+  - - quarter
+  max_words: 90
+- id: identity
+  q: Why would a commit use the wrong email address?
+  expect:
+  - - includeIf
+    - directory
+  max_words: 90

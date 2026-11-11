@@ -1,0 +1,11 @@
+# Steps for scripts/maintain.py (run it from cron/launchd/CI). weekday: 1=Mon..7=Sun (omit = daily). timeout in seconds.
+steps:
+  - {name: primer, cmd: [python3, scripts/build_primer.py]}
+  - {name: lint, cmd: [python3, scripts/lint_facts.py, --strict]}
+  - {name: evals, cmd: [python3, scripts/eval_run.py]}
+  - {name: recall, cmd: [python3, scripts/recall_eval.py]}
+  - {name: freshness, cmd: [python3, scripts/check_freshness.py]}
+  - {name: mutation-ratchet, cmd: [python3, scripts/auto_mutate.py, --check], weekday: 1, timeout: 1800}
+  # - {name: agentic, cmd: [python3, scripts/agentic_eval.py], weekday: 1}   # needs AGENTIC_CMD; costs tokens
+commit: false          # true: git add/commit/push `commit_paths` when they changed
+commit_paths: [facts, workstreams, decisions, status, metrics, capabilities.yaml, glossary.yaml, skills]

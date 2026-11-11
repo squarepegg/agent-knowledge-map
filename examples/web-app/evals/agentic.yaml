@@ -1,0 +1,33 @@
+# Agentic questions for the web-app example: answerable only from the brain (invented facts). scripts/agentic_ab.py web-app compares an agent with and without it.
+- id: canary
+  q: How long do we hold a canary before the full rollout, and at what share of traffic does it start?
+  expect:
+  - - 15 minutes
+    - 15 min
+  - - 10%
+  max_words: 90
+- id: migration-label
+  q: Which pull request label lets a migration drop or rename a column?
+  expect:
+  - - contract
+  max_words: 90
+- id: flag-default
+  q: What default should a new feature flag have in production, and within how many days must it be removed after full rollout?
+  expect:
+  - - 'false'
+    - 'off'
+  - - '30'
+  max_words: 90
+- id: budget
+  q: What happens to feature work when the monthly error budget is spent?
+  expect:
+  - - reliability
+    - pause
+    - paused
+    - pauses
+  max_words: 90
+- id: webkit
+  q: A checkout Playwright test fails twice on WebKit. What should we do with it?
+  expect:
+  - - fix
+  max_words: 90

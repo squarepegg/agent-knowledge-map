@@ -1,0 +1,56 @@
+# Evals for the web-app example (run: python scripts/eval_run.py examples/web-app/evals/questions.yaml after `init --example web-app`)
+- id: deploy
+  q: How does a deploy roll out?
+  run:
+    search: canary rollout
+  expect:
+  - 10%
+  - 15 minutes
+  tier: must
+  first_line: deploy-canary
+- id: rename
+  q: Can I rename a column?
+  run:
+    search: migration rename column
+  expect:
+  - expand
+  tier: must
+- id: flags
+  q: What default should a new flag have?
+  run:
+    search: feature flag default
+  expect:
+  - 'default: false'
+  tier: must
+  first_line: feature-flags
+- id: flaky
+  q: 'A checkout test fails on WebKit: skip it?'
+  run:
+    search: webkit flaky checkout
+  expect:
+  - never skip
+  tier: must
+  first_line: e2e-safari
+- id: cdn
+  q: Users get 404 on a JS file after deploy
+  run:
+    search: cdn purge static
+  expect:
+  - purge
+  tier: must
+  first_line: cdn-purge
+- id: budget
+  q: What happens when the error budget is spent?
+  run:
+    search: error budget spent
+  expect:
+  - reliability
+  tier: must
+  first_line: error-budget
+- id: in-flight
+  q: What is in flight?
+  run:
+    search: checkout redesign
+  expect:
+  - Checkout redesign
+  tier: must

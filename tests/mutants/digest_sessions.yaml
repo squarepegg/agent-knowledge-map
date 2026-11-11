@@ -1,0 +1,66 @@
+target: scripts/digest_sessions.py
+tests:
+- tests.test_ops_scripts
+- tests.test_capture
+- tests.test_packaging
+mutants:
+- id: redact-off
+  old: s = SECRET.sub("[REDACTED]", s or "")
+  new: s = s or ""
+- id: whitespace
+  old: re.sub(r'\s+', ' ', s)
+  new: s
+- id: truncate
+  old: return s[:n]
+  new: return s
+- id: user-dedup
+  old: 'if k in seen and not l.startswith("USER"): continue'
+  new: 'if k in seen: continue'
+- id: dedup-off
+  old: 'if k in seen and not l.startswith("USER"): continue'
+  new: pass
+- id: cap-priority-off
+  old: body = "\n".join(pri)
+  new: body = "\n".join(out)
+- id: priority
+  old: pri = [l for l in out if l.startswith(("USER","SUMMARY","ERR","MCP"))]
+  new: pri = [l for l in out if l.startswith("USER")]
+- id: short-kept
+  old: 'if len(body) < 400: continue'
+  new: pass
+- id: no-user-kept
+  old: 'if len([l for l in lines if l.startswith("USER")]) == 0: continue'
+  new: pass
+- id: error-only-flag
+  old: if b.get("type")=="tool_result" and b.get("is_error")
+  new: if b.get("type")=="tool_result"
+- id: env-ignored
+  old: raw = os.environ.get("BRAIN_SESSION_GLOBS") if env is None else env
+  new: raw = env
+- id: bad-pair-kept
+  old: for x in raw.split(os.pathsep) if "=" in x]
+  new: for x in raw.split(os.pathsep)]
+- id: codex-cwd
+  old: cwd = p.get("cwd") or cwd; continue
+  new: continue
+- id: codex-env-ctx
+  old: "if s_ and not s_.startswith(\"<\"): lines.append(\"USER: \" + s_)\n        elif t == \"function_call\":"
+  new: "if s_: lines.append(\"USER: \" + s_)\n        elif t == \"function_call\":"
+- id: codex-cmd-key
+  old: cmd = a.get("cmd") or a.get("command") or p.get("arguments") or ""
+  new: cmd = p.get("arguments") or ""
+- id: codex-err
+  old: lines.append(f"ERR [{name}] {arg} => {out}" if ERR_RX.search(out[:300]) else f"CMD {arg[:200]}")
+  new: lines.append(f"CMD {arg[:200]}")
+- id: codex-type
+  old: 'if e.get("type") != "response_item": continue'
+  new: pass
+- id: codex-role
+  old: 'if t == "message" and p.get("role") == "user":'
+  new: 'if t == "message":'
+- id: codex-registered
+  old: '"codex": digest_codex}'
+  new: '}'
+- id: default-dir
+  old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+  new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")

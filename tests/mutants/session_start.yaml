@@ -1,0 +1,19 @@
+target: scripts/session_start.py
+tests: [tests.test_ops_scripts]
+mutants:
+- {id: main-branch-ok, old: 'if not branch or branch in ("main", "master"): return False', new: 'if not branch: return False'}
+- {id: empty-branch-ok, old: 'if not branch or branch in', new: 'if branch in'}
+- {id: glob-nocase, old: 'fnmatch.fnmatchcase(branch, g)', new: 'fnmatch.fnmatch(branch.lower(), g.lower())'}
+- {id: short-slug-ok, old: 'len(w["slug"]) >= 6 and', new: 'True and'}
+- {id: slug-case, old: 'w["slug"].lower() in branch.lower()', new: 'w["slug"] in branch'}
+- {id: done-matches, old: 'w["status"] in ("active", "blocked") and', new: ''}
+- {id: blocked-dropped, old: 'in ("active", "blocked") and', new: 'in ("active",) and'}
+- {id: repo-case, old: 'r.lower() == repo', new: 'r == repo'}
+- {id: likely-many, old: 'return ev[0] if len(ev) == 1 else None', new: 'return ev[0] if ev else None'}
+- {id: probe-stdout, old: 'bool(r.stdout.strip()) if p.get("okWhen") == "stdoutNonEmpty" else r.returncode == 0', new: 'r.returncode == 0'}
+- {id: probe-exc, old: 'return False, type(e).__name__', new: 'return True, type(e).__name__'}
+- {id: unverified-tag, old: '"(unverified) " if fm.get("verified") is False else ""', new: '""'}
+- {id: fact-repo-case, old: 'repo.lower() in [r.lower() for r in as_list(fm.get("repos"))]', new: 'repo in as_list(fm.get("repos"))'}
+- {id: several-msg, old: 'if not pick and len(matches) > 1:', new: 'if len(matches) > 1:'}
+- {id: fail-fix-dropped, old: 'f" -> fix:', new: 'f" -> fox:'}
+- {id: branch-fallback, old: '(g("symbolic-ref", "--short", "-q", "HEAD") or g("rev-parse", "--abbrev-ref", "HEAD"))', new: 'g("rev-parse", "--abbrev-ref", "HEAD")'}

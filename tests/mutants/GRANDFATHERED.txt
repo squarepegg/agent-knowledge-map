@@ -1,0 +1,1 @@
+# Scripts without a hand-written mutants file. Scored by auto_mutate.py; this list may only shrink. Never add a new script here.

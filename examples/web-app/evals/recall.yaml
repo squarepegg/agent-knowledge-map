@@ -1,0 +1,17 @@
+# Retrieval recall for the web-app example: symptom-style queries -> the file that should come back (scripts/recall_eval.py)
+- q: users see a blank page after a release because a js file is missing
+  expect: facts/cdn-purge-after-deploy
+- q: how do I rename a database column safely
+  expect: facts/db-migrations-expand-contract
+- q: how long do we watch a release before it goes to everyone
+  expect: facts/deploy-canary
+- q: checkout test only fails in safari
+  expect: facts/e2e-safari-flaky
+- q: when do we stop shipping features
+  expect: facts/error-budget-policy
+- q: old toggles piling up in the code
+  expect: facts/feature-flags-default-off
+- q: single page checkout project status
+  expect: workstreams/checkout-redesign
+- q: a release broke production, what now
+  expect: facts/deploy-canary

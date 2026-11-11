@@ -1,0 +1,17 @@
+# Retrieval recall for the platform-infra example: symptom-style queries -> the file that should come back (scripts/recall_eval.py)
+- q: terraform apply from my laptop left the state drifted
+  expect: facts/terraform-via-atlantis
+- q: kubectl says you must be logged in
+  expect: facts/eks-access-sso
+- q: argo sync fails complaining about an unknown kind
+  expect: facts/argocd-sync-waves
+- q: node group upgrade is stuck draining
+  expect: facts/node-drain-before-ami-roll
+- q: pod cannot call s3, access denied
+  expect: facts/irsa-trust-policy-subject
+- q: when do we page and write a postmortem
+  expect: facts/severity-definitions
+- q: kubernetes version upgrade progress
+  expect: workstreams/eks-upgrade
+- q: why do we register argo applications from a root app
+  expect: decisions/2025-01-12-argocd-app-of-apps

@@ -1,0 +1,14 @@
+target: scripts/maintain.py
+tests: [tests.test_ops_scripts]
+mutants:
+- {id: weekday-ignored, old: 'return not step.get("weekday") or int(step["weekday"]) == weekday', new: 'return True'}
+- {id: weekday-str, old: 'int(step["weekday"]) == weekday', new: 'step["weekday"] == weekday'}
+- {id: only-ignored, old: 'if only and s["name"] not in only: continue', new: 'pass'}
+- {id: timeout-default, old: 's.get("timeout", 900)', new: 's.get("timeout", 0.0001)'}
+- {id: exc-ok, old: 'except Exception: ok = False', new: 'except Exception: ok = True'}
+- {id: rc-inverted, old: 'text=True).returncode == 0', new: 'text=True).returncode != 0'}
+- {id: failed-unsorted-or-wrong, old: 'if v == "failed")', new: 'if v != "ok")'}
+- {id: no-changes-commits, old: 'if subprocess.run(["git", "diff", "--cached", "--quiet"], cwd=cwd).returncode == 0: return False', new: 'pass'}
+- {id: missing-path-added, old: 'existing = [p for p in paths if os.path.exists(os.path.join(cwd, p))]', new: 'existing = paths'}
+- {id: commit-on-fail, old: 'if cfg.get("commit") and not doc["failed"]:', new: 'if cfg.get("commit"):'}
+- {id: exit-code, old: 'return 1 if doc["failed"] else 0', new: 'return 0'}
