@@ -1,4 +1,4 @@
-# Adopting ai-brain in an existing brain
+# Adopting agent-knowledge-map in an existing brain
 
 For teams that already run a home-grown brain (their own facts, scripts and extension) and want to share this core instead of maintaining copies.
 
@@ -11,7 +11,7 @@ For teams that already run a home-grown brain (their own facts, scripts and exte
 ## Steps (do them in a branch; the brain keeps working at every step)
 1. **Inventory.** Diff your scripts against `scripts/` here. Anything you changed locally that is generally useful goes upstream as a PR first; anything company-specific stays in your repo.
 2. **Env names.** This repo reads `BRAIN_DIR` and `BRAIN_REPOS_ROOT`. If yours differ, export both in your shell profile; keep the old name working until every caller is migrated (`BRAIN_DIR="${OLD_BRAIN_DIR:-...}"`).
-3. **Vendor the core.** `git subtree add --prefix=vendor/ai-brain <url> main --squash` (or a submodule), then replace your copies in `scripts/` with symlinks into `vendor/ai-brain/scripts/`. Pull updates with `git subtree pull`.
+3. **Vendor the core.** `git subtree add --prefix=vendor/agent-knowledge-map <url> main --squash` (or a submodule), then replace your copies in `scripts/` with symlinks into `vendor/agent-knowledge-map/scripts/`. Pull updates with `git subtree pull`.
 4. **Primer.** Move your hardcoded router rows into `brain.config.yaml` (`routes:`, `access:`). Run `brain.py primer` and diff the result against your old primer; the wording will differ but the same entries should be present.
 5. **Lint.** Run `lint_facts.py`. Expect new soft findings (`SOURCE`, `ABSOLUTE`, `OLD`); they are real. Only `--strict` hard findings (`PARSE`, `SECRET`, `FIELD`, `REQ`) block.
 6. **Probes.** Port your environment probes to `probes.yaml` (id, label, cmd, okWhen, fix). `capabilities.yaml` `requires:` may name any id declared there.

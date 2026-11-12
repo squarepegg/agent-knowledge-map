@@ -1,4 +1,6 @@
-# ai-brain
+# agent-knowledge-map
+
+A map of everything your coding agents know, checked against the code and scored by evals, so answers stay structured and improve every week.
 
 A git-versioned, plain-text **memory for coding agents**. It persists what an agent learns across sessions and repos: verified facts, in-flight work state, decisions, glossary, capabilities. A small generated *primer* routes every new session to it.
 
@@ -11,7 +13,7 @@ No framework, no daemon, no plugin: Markdown + YAML + a few hundred lines of Pyt
 
 ## Quick start
 ```bash
-git clone https://github.com/<you>/ai-brain ~/.agents/brain      # or anywhere; set BRAIN_DIR
+git clone https://github.com/<you>/agent-knowledge-map ~/.agents/brain      # or anywhere; set BRAIN_DIR
 pip install pyyaml
 export BRAIN_DIR=~/.agents/brain
 python3 $BRAIN_DIR/scripts/brain.py init --org "Acme Co" --no-examples --claude
@@ -20,7 +22,7 @@ python3 $BRAIN_DIR/scripts/brain.py init --org "Acme Co" --no-examples --claude
 
 Start from an example instead of a blank template: `init --example data-team|web-app|platform-infra|solo-dev` (see [examples/README.md](examples/README.md)).
 
-Other agents: import or symlink `PRIMER.md` as the global instructions file and link `skills/*` into the agent's skills directory (see [docs/integrations.md](docs/integrations.md)). As a Claude Code plugin (skill + hooks only; it needs a brain directory): `/plugin marketplace add <you>/ai-brain`.
+Other agents: import or symlink `PRIMER.md` as the global instructions file and link `skills/*` into the agent's skills directory (see [docs/integrations.md](docs/integrations.md)). As a Claude Code plugin (skill + hooks only; it needs a brain directory): `/plugin marketplace add <you>/agent-knowledge-map`.
 
 Then tell the agent (in the primer's protocol) to: search before rediscovering, `note` learnings, update `STATE.md` at milestones. The `brain` skill holds the full protocol.
 
@@ -85,3 +87,6 @@ Never store secrets or personal data. `note` and `lint` reject obvious secret pa
 See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md) and [docs/adopting-in-an-existing-brain.md](docs/adopting-in-an-existing-brain.md).
 
 License: MIT
+
+## See also
+Companion repo: [agent-toolkit](https://github.com/squarepegg/agent-toolkit): the agent skills (adversarial SDLC, deterministic simulation testing, evidence-gated decisions) I use alongside it.

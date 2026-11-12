@@ -1,7 +1,7 @@
 {
-  "name": "ai-brain",
+  "name": "agent-knowledge-map",
   "version": "0.7.0",
-  "description": "Git-versioned memory for coding agents: verified facts, workstream state, decisions, evals and mutation-tested tooling.",
+  "description": "A map of everything your coding agents know, checked against the code and scored by evals, so answers stay structured and improve every week.",
   "keywords": [
     "memory",
     "agents",

@@ -10,7 +10,7 @@ class Packaging(unittest.TestCase):
         self.assertRegex(rd("CHANGELOG.md"), rf"## \[{re.escape(v)}\]")
 
     def test_manifests(self):
-        p = json.loads(rd(".claude-plugin/plugin.json")); self.assertEqual(p["name"], "ai-brain"); self.assertTrue(p["description"])
+        p = json.loads(rd(".claude-plugin/plugin.json")); self.assertEqual(p["name"], "agent-knowledge-map"); self.assertTrue(p["description"])
         m = json.loads(rd(".claude-plugin/marketplace.json")); self.assertEqual(m["plugins"][0]["name"], p["name"]); self.assertEqual(m["plugins"][0]["source"], "./")
 
     def test_plugin_hooks_reference_real_scripts_and_match_init(self):
