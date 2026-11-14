@@ -5,11 +5,12 @@ Each entry: id, q, run: {search: "kw kw"} | {cmd: [argv...]}, expect: [substr...
 tier: must (default; exit 1 on failure) | coverage (known gap; reported, never fails). Promote coverage -> must once the brain answers it.
 needs: [paths relative to the brain]: SKIP the question (not counted) if any is missing - for questions about content a user may delete (the shipped examples).
 Why: a brain edit only counts if some question gets answered better or at least no worse. This is the regression gate for that."""
-import json, os, subprocess, sys
+import json, os, subprocess, sys, time
 import yaml
 
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(HERE)
+import _attempts
 
 def answer(q):
     r = q.get("run") or {}
@@ -31,14 +32,18 @@ def check(q, out):
 
 def run(path):
     qs = yaml.safe_load(open(path)) or []; res = []
+    log = _attempts.Log(B, os.path.splitext(os.path.basename(path))[0], _attempts.grader_version(check), agent=_attempts.grader_version(answer)); log.start()
     for q in qs:
         if any(not os.path.exists(os.path.join(B, n)) for n in q.get("needs") or []):
             res.append({"id": q["id"], "tier": "skip", "pass": True, "q": q.get("q", ""), "missing": [], "first_ok": True, "forbidden": [], "error": ""}); continue
+        t0 = time.time()
         try: out, err = answer(q), ""
         except Exception as e: out, err = "", str(e)
         ok, missing, first_ok, hit = check(q, out)
         res.append({"id": q["id"], "tier": q.get("tier", "must"), "pass": ok and not err, "q": q.get("q", ""), "missing": missing,
                     "first_ok": first_ok, "forbidden": hit, "error": err})
+        log.record(q, res[-1], time.time() - t0)
+    log.end({"n": len(res), "passed": sum(r["pass"] for r in res if r["tier"] != "skip")})
     return res
 
 def main(argv):
@@ -51,6 +56,7 @@ def main(argv):
         print(f"{tag} [{r['tier']}] {r['id']} - {r['q']}{extra}")
     must = [r for r in res if r["tier"] == "must"]; cov = [r for r in res if r["tier"] not in ("must", "skip")]
     print(f"\nmust: {sum(r['pass'] for r in must)}/{len(must)}   coverage: {sum(r['pass'] for r in cov)}/{len(cov)}   skipped: {sum(r['tier'] == 'skip' for r in res)}")
+    _attempts.report_triggers(B)
     if "--json" in argv: json.dump(res, open(argv[argv.index("--json") + 1], "w"), indent=1)
     return 0 if all(r["pass"] for r in must) else 1
 

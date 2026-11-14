@@ -1,0 +1,43 @@
+target: scripts/_attempts.py
+tests:
+- tests.test_attempts
+mutants:
+- id: key-ignores-grader
+  old: return _h(self.name, json.dumps(fixture, sort_keys=True, default=str), self.grader, self.state, self.agent)
+  new: return _h(self.name, json.dumps(fixture, sort_keys=True, default=str), self.state, self.agent)
+- id: key-ignores-fixture
+  old: return _h(self.name, json.dumps(fixture, sort_keys=True, default=str), self.grader
+  new: return _h(self.name, self.grader
+- id: key-ignores-agent
+  old: self.grader, self.state, self.agent)
+  new: self.grader, self.state)
+- id: no-git-reuses
+  old: "if self.state is None: return None"
+  new: "if self.state is None: return 'nogit'"
+- id: diff-ignored
+  old: return _h(head, diff, *untracked)
+  new: return _h(head, *untracked)
+- id: untracked-ignored
+  old: return _h(head, diff, *untracked)
+  new: return _h(head, diff)
+- id: metrics-counted
+  old: git("diff", "HEAD", "--binary", "--", ".", ":(exclude)metrics")
+  new: git("diff", "HEAD", "--binary")
+- id: untracked-metrics-counted
+  old: '"-z", "--", ".", ":(exclude)metrics")'
+  new: '"-z")'
+- id: torn-line-fatal
+  old: "except ValueError: pass"
+  new: "except ValueError: raise"
+- id: newest-start-counted
+  old: for r in starts[:-1] if
+  new: for r in starts if
+- id: types-off-by-one
+  old: if n >= types_max
+  new: if n > types_max
+- id: slow-ignored
+  old: if r.get("secs", 0) / 60 > minutes_max]
+  new: if False]
+- id: cache-unkeyed
+  old: if r.get("type") == "attempt" and r.get("key")
+  new: if r.get("type") == "attempt"

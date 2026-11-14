@@ -6,10 +6,10 @@ Entry: {q: "what a person would type when stuck", expect: "facts/some-fact.md" (
 Prints `n=.. recall@1=.. recall@5=..` then a MISS line per query whose file is not in the top 5. Exit 1 if recall@5 < floor (env RECALL_FLOOR, default 0.9).
 Caveat (learned the hard way): queries written by someone who has just read the fact titles are optimistic. Phrase them as symptoms, not titles,
 and have a second person add queries over time. Env: BRAIN_DIR."""
-import json, os, sys
+import json, os, sys, time
 import yaml
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
-import brain
+import brain, _attempts
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(HERE)
 
 def file_order(rows):
@@ -29,22 +29,26 @@ def score(ranks):
     n = len(ranks)
     return {"n": n, "recall@1": (sum(1 for r in ranks if r == 1) / n) if n else 1.0, "recall@5": (sum(1 for r in ranks if r is not None and r <= 5) / n) if n else 1.0}
 
-def run(entries, brain_dir=None, docs=None):
+def run(entries, brain_dir=None, docs=None, log=None):
     brain_dir = brain_dir or B; docs = docs if docs is not None else brain.corpus(brain_dir); res = []
     for e in entries:
         if any(not os.path.exists(os.path.join(brain_dir, n)) for n in e.get("needs") or []): continue
+        t0 = time.time()
         paths = file_order(brain.rank(docs, brain.query_words(e["q"]), limit=200))
         res.append({"q": e["q"], "expect": e["expect"], "rank": rank_of(paths, e["expect"]), "top": paths[:3]})
+        if log: log.record(e, res[-1], time.time() - t0)
     return res
 
 def main(argv):
     args = [a for a in argv[1:] if not a.startswith("--") and a not in (argv[argv.index("--floor") + 1] if "--floor" in argv else None, argv[argv.index("--json") + 1] if "--json" in argv else None)]
     path = args[0] if args else os.path.join(B, "evals", "recall.yaml")
     floor = float(argv[argv.index("--floor") + 1]) if "--floor" in argv else float(os.environ.get("RECALL_FLOOR", 0.9))
-    res = run(yaml.safe_load(open(path)) or []); sc = score([r["rank"] for r in res])
+    log = _attempts.Log(B, os.path.splitext(os.path.basename(path))[0], _attempts.grader_version(rank_of, score), agent=_attempts.grader_version(file_order)); log.start()
+    res = run(yaml.safe_load(open(path)) or [], log=log); sc = score([r["rank"] for r in res]); log.end(sc)
     print(f"n={sc['n']} recall@1={sc['recall@1']:.2f} recall@5={sc['recall@5']:.2f} floor={floor:.2f}")
     for r in res:
         if r["rank"] is None or r["rank"] > 5: print(f"MISS {r['q']!r} -> expected {r['expect']}, got {r['top']}")
+    _attempts.report_triggers(B)
     if "--json" in argv: json.dump({"score": sc, "results": res}, open(argv[argv.index("--json") + 1], "w"), indent=1)
     return 0 if sc["recall@5"] >= floor else 1
 
