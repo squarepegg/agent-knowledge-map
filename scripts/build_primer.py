@@ -3,6 +3,7 @@
 Everything else stays in glossary.yaml / capabilities.yaml / facts/ and is found via `brain.py search`.
 Config: brain.config.yaml. Env: BRAIN_DIR."""
 import os, re, glob, sys, yaml
+import _records
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def clip(s, n):
@@ -26,7 +27,8 @@ def render(cfg, gl, skills, style, n):
     if core:
         L += ["", "## Core systems (more terms: `brain.py search` / glossary.yaml)"]
         for g in core:
-            L.append(f"- **{g['term']}** — {clip(g.get('one_liner'), n)}" + (f" → `{g['skill']}`" if g.get("skill") else ""))
+            label = str(g['term']) + (f" [{g['context'].strip()}]" if g.get('record_version') == 1 and g.get('context') else '')
+            L.append(f"- **{label}** — {clip(g.get('one_liner'), n)}" + (f" → `{g['skill']}`" if g.get("skill") else ""))
     L += ["", "## Brain protocol",
           "- Knowledge lives in the brain repo (skill `brain` has the full protocol).",
           "- Pinned workstream: read its STATE.md first, update at milestones. Record durable learnings and user corrections with `brain.py note` (never secrets/PII).",
@@ -37,6 +39,8 @@ def build(brain_dir=None):
     global B
     if brain_dir: B = brain_dir
     cfg = load("brain.config.yaml", {}); gl = load("glossary.yaml", [])
+    errors = _records.glossary_errors(gl, B)
+    if errors: raise _records.RecordError('invalid glossary: ' + '; '.join(errors))
     budget = int(os.environ.get("PRIMER_BUDGET") or cfg.get("primer_budget") or 8500)
     skills = sorted(os.path.basename(os.path.dirname(p)) for p in glob.glob(f"{B}/skills/*/SKILL.md"))
     sp = os.path.join(B, "style.md"); style = open(sp).read().strip() if os.path.exists(sp) else ""
@@ -46,6 +50,8 @@ def build(brain_dir=None):
     return out, len(out) > budget
 
 if __name__ == "__main__":
-    out, over = build()
+    try: out, over = build()
+    except _records.RecordError as e:
+        print('refusing: ' + str(e), file=sys.stderr); sys.exit(2)
     open(os.path.join(B, "PRIMER.md"), "w").write(out)
     print(f"PRIMER.md {len(out)} chars (~{len(out)//4} tokens)" + (" [OVER BUDGET]" if over else ""))

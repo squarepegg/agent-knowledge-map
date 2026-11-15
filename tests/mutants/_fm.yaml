@@ -2,7 +2,7 @@ target: scripts/_fm.py
 tests: [tests.test_lint_primer]
 mutants:
 - {id: no-fm-body, old: 'if not m: return {}, t', new: 'if not m: return {}, ""'}
-- {id: parse-error-flag, old: 'return {"_parse_error": True}, m.group(2)', new: 'return {}, m.group(2)'}
-- {id: body-group, old: 'return (yaml.safe_load(m.group(1)) or {}), m.group(2)', new: 'return (yaml.safe_load(m.group(1)) or {}), m.group(1)'}
+- {id: parse-error-flag, old: 'except Exception: return {"_parse_error": True}, m.group(2)', new: 'except Exception: return {}, m.group(2)'}
+- {id: body-group, old: 'return fm, m.group(2)', new: 'return fm, m.group(1)'}
 - {id: optional-newline, old: '\n---\n?(.*)', new: '\n---\n(.*)'}
-- {id: none-fm, old: 'or {}), m.group(2)', new: 'or None), m.group(2)'}
+- {id: none-fm, old: 'fm = yaml.safe_load(m.group(1)) or {}', new: 'fm = yaml.safe_load(m.group(1)) or None'}

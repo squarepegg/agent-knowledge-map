@@ -9,6 +9,7 @@ correction -> facts/user-instincts.md row (the user is the authority: fix the re
 import datetime, glob, os, re, shutil, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import brain
+import _records
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(HERE)
 ENTRY = re.compile(r"^## \[(\w+)\] (.*)$", re.M)
 
@@ -32,8 +33,13 @@ def duplicate_of(item, brain_dir):
     return None
 
 def draft_fact(item, today):
-    return (f"---\ntitle: {item['title']}\nrepos: []\ntags: []\nanchors: []\nverified: false\nrecorded_at: '{today}'\nconfidence: low\nscope: personal\n"
-            f"source: inbox {today}\n---\n{item['body'] or item['title']}\n")
+    fm = dict(record_version=1, title=item['title'], repos=[], tags=[], anchors=[], verified=False,
+              recorded_at=today, confidence='low', scope='personal', source=f'inbox {today}')
+    errors = _records.validate(fm, 'fact', _records.date(today))
+    if errors: raise _records.RecordError('; '.join(errors))
+    text = _records.render(fm, (item['body'] or item['title']) + '\n')
+    if _records.SECRET.search(text): raise _records.RecordError('refusing secret-like content')
+    return text
 
 def draft_decision(item, today):
     return f"# {item['title']}\ndate: {today}\nstatus: accepted\n## Context\n{item['body']}\n## Decision\n## Consequences\n"
@@ -62,6 +68,7 @@ def plan(brain_dir=None, today=None, write=False):
             dup = duplicate_of(item, brain_dir)
             lines.append(f"- [{item['kind']}] {item['title']}  ({os.path.basename(f)})\n  -> {action}" + (f"\n  !! probable duplicate of {dup}: merge instead" if dup else ""))
             if write and newf and not dup and not os.path.exists(os.path.join(brain_dir, newf)):
+                _records.contained_path(brain_dir, os.path.join(brain_dir, newf))
                 os.makedirs(os.path.dirname(os.path.join(brain_dir, newf)), exist_ok=True)
                 open(os.path.join(brain_dir, newf), "w").write(content); created.append(newf)
     head = f"{len(lines)} item(s) from {len(files)} inbox file(s)"
@@ -75,7 +82,10 @@ def archive(brain_dir=None):
 
 def main(argv):
     if "--archive" in argv: print("archived:", ", ".join(archive()) or "nothing"); return 0
-    out, _ = plan(write="--write" in argv); print(out); return 0
+    try:
+        out, _ = plan(write="--write" in argv); print(out); return 0
+    except (OSError, _records.RecordError) as e:
+        print('refusing: ' + str(e), file=sys.stderr); return 2
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

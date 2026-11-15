@@ -1,7 +1,8 @@
 ---
 slug: example-workstream
 title: Example workstream
-status: done
+tags: [work, progress]
+status: paused
 repos: []
 branches: []     # globs; a matching branch auto-selects this workstream
 updated: 2026-11-09

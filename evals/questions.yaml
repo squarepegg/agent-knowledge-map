@@ -53,3 +53,71 @@
   run: {search: "mine_sessions recurring errors"}
   expect: [mine_sessions]
   tier: must
+
+# Brain abstraction contracts and bounded context.
+- expect:
+  - facts/brain-record-extension.md
+  - _records.validate
+  id: record-boundary
+  needs: [facts/brain-record-extension.md]
+  q: How do I add a record writer without inventing another schema?
+  run:
+    search: record writer extension boundary
+  tier: must
+- expect:
+  - brain.py ws complete
+  id: completion-evidence
+  q: How do I complete a workstream with recorded evidence?
+  run:
+    search: ws complete check command result
+  tier: must
+- expect:
+  - 'Context:'
+  - 'omitted:'
+  id: bounded-context
+  q: How do I retrieve bounded context with trust labels?
+  run:
+    cmd:
+    - python3
+    - scripts/brain.py
+    - context
+    - record writer
+    - --budget
+    - '4000'
+  tier: must
+
+# Scoped vocabulary: find definitions, not inferred implementation truth.
+- id: language-record-verification
+  q: Does a fact verification attestation establish truth?
+  run:
+    cmd:
+    - python3
+    - scripts/brain.py
+    - context
+    - verification attestation fact-record
+    - --budget
+    - '8000'
+  expect:
+  - facts/brain-record-language.md
+  - 'context: fact-record'
+  - does not establish truth
+  tier: must
+  needs:
+  - facts/brain-record-language.md
+- id: language-context-verification
+  q: Can a fact remain verified while context presents it as stale?
+  run:
+    cmd:
+    - python3
+    - scripts/brain.py
+    - context
+    - context-bundle verified stale
+    - --budget
+    - '8000'
+  expect:
+  - facts/brain-context-language.md
+  - 'context: context-bundle'
+  - '90'
+  tier: must
+  needs:
+  - facts/brain-context-language.md

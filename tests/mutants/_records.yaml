@@ -1,0 +1,15 @@
+target: scripts/_records.py
+tests: [tests.test_abstractions]
+mutants:
+  - {id: accept-unsupported-version, old: "if versioned and (type(version) is not int or version != 1):", new: "if False:"}
+  - {id: duplicate-key-guard, old: "len(keys) != len(set(keys))", new: "False"}
+  - {id: completion-guard-off, old: "(versioned or require_evidence)", new: "False"}
+  - {id: contract-requirements-off, old: "for k in CONTRACT:", new: "for k in ():"}
+  - {id: blank-evidence-accepted, old: "return isinstance(value, str) and bool(value.strip())", new: "return isinstance(value, str)"}
+  - {id: symlink-guard-off, old: "if cursor.is_symlink():", new: "if False:"}
+  - {id: verification-status-wrong, old: "fm.update(record_version=1, verified=True,", new: "fm.update(record_version=1, verified=False,"}
+  - {id: failed-replacement-truncates-original, old: "os.replace(tmp, path)", new: "path.write_text(''); os.replace(tmp, path)"}
+  - {id: secret-guard-off, old: "if SECRET.search(text):", new: "if False:"}
+  - {id: cleanup-off, old: "if tmp and os.path.exists(tmp):", new: "if False:"}
+  - {id: provenance-not-recorded, old: "verify_by=source", new: "verify_by='ignored'"}
+  - {id: completion-launders-invalid-fields, old: "errors = [e for e in validate(dict(fm, record_version=1), 'workstream', today)", new: "errors = [e for e in []"}

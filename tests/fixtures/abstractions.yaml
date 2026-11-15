@@ -1,0 +1,19 @@
+# Inputs and expected outcomes, frozen before implementing the commands.
+completion:
+  - {id: complete, status: active, check: suite, command: python -m unittest, result: passed, exit: 0}
+  - {id: repeat, status: done, check: suite, command: python -m unittest, result: passed, exit: 0}
+  - {id: empty-check, status: active, check: ' ', command: test, result: passed, exit: 2}
+  - {id: empty-command, status: active, check: suite, command: ' ', result: passed, exit: 2}
+  - {id: empty-result, status: active, check: suite, command: test, result: ' ', exit: 2}
+  - {id: unknown-status, status: invented, check: suite, command: test, result: passed, exit: 2}
+verification:
+  - {id: verify, source: 'local check: tests', exit: 0}
+  - {id: blank, source: ' ', exit: 2}
+  - {id: secret, source: 'password: abcdefghijklmnopqrstuvwxyz0123', exit: 2}
+invalid_records:
+  - {id: future-version, changes: {record_version: 99}}
+  - {id: wrong-boolean, changes: {verified: 'false'}}
+  - {id: wrong-confidence, changes: {confidence: certain}}
+  - {id: bad-date, changes: {recorded_at: yesterday}}
+  - {id: missing-title, changes: {title: ''}}
+  - {id: bad-tags, changes: {tags: words}}

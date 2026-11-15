@@ -1,0 +1,10 @@
+target: scripts/_context.py
+tests: [tests.test_abstractions]
+mutants:
+  - {id: budget-unbounded, old: "if len((out + entry).encode('utf-8')) + footer_size <= budget:", new: "if True:"}
+  - {id: wrong-byte-count, old: "len((out + entry).encode('utf-8'))", new: "len(out + entry)"}
+  - {id: stale-facts-trusted, old: "(today - d).days > 90", new: "False"}
+  - {id: leads-trusted, old: "trust = 'unverified'", new: "trust = 'verified'"}
+  - {id: no-context-selection, old: "matches = session_start.match(states, repo, branch)", new: "matches = []"}
+  - {id: completion-policy-ignored, old: "_records.validate(fm, kind, today, require_evidence)", new: "_records.validate(fm, kind, today)"}
+  - {id: no-omission-report, old: "return out + f'omitted: {omitted}\\n'", new: "return out"}

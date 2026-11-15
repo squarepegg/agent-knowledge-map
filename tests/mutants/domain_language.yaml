@@ -1,0 +1,13 @@
+target: scripts/_records.py
+tests: [tests.test_domain_language]
+mutants:
+  - {id: ignore-ambiguity, old: "if key in names:", new: "if False:"}
+  - {id: merge-contexts, old: "key = (context, name.strip().casefold())", new: "key = ('global', name.strip().casefold())"}
+  - {id: no-name-normalization, old: "key = (context, name.strip().casefold())", new: "key = (context, name)"}
+  - {id: no-context-normalization, old: "context = entry['context'].strip().casefold()", new: "context = entry['context']"}
+  - {id: aliases-ignored, old: "for name in [entry['term']] + entry.get('aliases', []):", new: "for name in [entry['term']]:"}
+  - {id: dangling-definition, old: "p = contained_file(brain, Path(brain).absolute() / rel)", new: "p = Path(brain).absolute() / 'facts/meaning.md'"}
+  - {id: mismatched-context, old: "if not nonblank(fm.get('context')) or fm['context'].strip().casefold() != context:", new: "if False:"}
+  - {id: oversize-summary, old: "len(entry['one_liner']) > 140", new: "len(entry['one_liner']) > 141"}
+  - {id: legacy-rejected, old: "if 'record_version' not in entry:", new: "if False:"}
+  - {id: wrong-version-accepted, old: "if type(entry['record_version']) is not int or entry['record_version'] != 1:", new: "if False:"}

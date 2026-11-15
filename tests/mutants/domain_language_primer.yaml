@@ -1,0 +1,6 @@
+target: scripts/build_primer.py
+tests: [tests.test_domain_language]
+mutants:
+  - id: context-label-omitted
+    old: "if g.get('record_version') == 1 and g.get('context') else ''"
+    new: "if False else ''"
