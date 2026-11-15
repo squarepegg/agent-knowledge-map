@@ -1,6 +1,6 @@
 ---
 name: brain
-description: Use when starting or resuming a workstream, saving learnings, updating workstream STATE, compacting the brain inbox, checking stale facts (lint), recording decisions, creating topic skills, or promoting personal knowledge to a shared team brain.
+description: Use when starting or resuming a workstream, saving learnings, updating workstream STATE, compacting the brain inbox, checking stale facts (lint), maintaining scoped project vocabulary, recording decisions, creating topic skills, or promoting personal knowledge to a shared team brain.
 ---
 
 # Brain
@@ -69,6 +69,11 @@ When a topic accumulates >~8 facts or is needed repeatedly, create `skills/<topi
 When a recurring task requires rediscovering design choices, capture its supported extension point as a fact using `templates/extension-contract.md` (`kind: extension-contract`). Record **need, use, guarantees, boundary, enforcement, example, choices_removed, change_when**. Reference one canonical implementation and an executable project check; validate the actual boundary before marking the fact verified. Keep details out of the primer.
 
 Use and preserve the supported abstraction while its guarantees fit the task. When requirements differ, inspect the implementation, extend or replace the abstraction and its checks, then update the contract. When proposing an abstraction, identify the choices it removes and how violations will be detected. Brain lint checks contract structure; project lint/tests enforce code boundaries. See `docs/brain-abstractions.md` for schemas, migration, evidence limits and the concrete record-writer contract. Writers share `_records.py`; bounded retrieval in `_context.py` reuses existing ranking and workstream selection.
+
+### Shared domain language
+Before extending a project, search its glossary and use its canonical terms in the relevant bounded context. A shared name conveys a model; inspect code/tests when claiming the implementation follows it. Here domain-driven design is distinct from the doubt-driven-development review workflow.
+
+For a recurring ambiguity, add an opt-in `record_version: 1` glossary entry with `term`, `context`, `kind`, `one_liner`, optional `aliases`, and `definition: facts/<topic>.md`. Use `templates/domain-language.md` for the linked versioned fact: precise meaning, relationships/invariants, canonical symbols, anchored executable checks, counterexamples, and when to revise the model. Keep details out of the primer. Strict lint checks same-context term/alias ambiguity and scoped definition links; it does not scan arbitrary source identifiers or prove meaning. Aliases are searchable text, not automatic query expansion. Qualify the context when meanings differ; do not impose one vocabulary across unrelated domains. See `docs/domain-language.md` and the two `Verified` examples in glossary.yaml.
 
 ## 6. Promoting to a shared team brain
 Personal brain → team brain is a rewrite, not a copy.

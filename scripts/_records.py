@@ -245,3 +245,62 @@ def verify_fact(brain, slug, source, today=None):
         raise RecordError('; '.join(errors))
     atomic_write(p, render(fm, body))
     return p
+
+
+def glossary_errors(entries, brain):
+    """Scoped language structure. Unversioned entries retain legacy behavior.
+
+    The definition is an anchored fact; this validator cannot establish its
+    semantic truth or automatically enforce names across a caller's codebase.
+    """
+    if not isinstance(entries, list):
+        return ['glossary must be a list']
+    errors, names = [], {}
+    for index, entry in enumerate(entries, 1):
+        prefix = f'entry {index}: '
+        if not isinstance(entry, dict):
+            errors.append(prefix + 'must be a mapping')
+            continue
+        if 'record_version' not in entry:
+            continue
+        local = []
+        if type(entry['record_version']) is not int or entry['record_version'] != 1:
+            local.append('record_version must be 1')
+        for field in ('term', 'context', 'one_liner', 'definition'):
+            if not nonblank(entry.get(field)):
+                local.append(field + ' must be a nonblank string')
+        if isinstance(entry.get('one_liner'), str) and len(entry['one_liner']) > 140:
+            local.append('one_liner must be <=140 characters')
+        if entry.get('kind') not in ('system', 'concept', 'env', 'tool', 'team'):
+            local.append('kind must be system, concept, env, tool or team')
+        for field in ('aliases', 'repos'):
+            values = entry.get(field, [])
+            if not isinstance(values, list) or any(not nonblank(v) for v in values):
+                local.append(field + ' must be a list of nonblank strings')
+        if 'core' in entry and type(entry['core']) is not bool:
+            local.append('core must be boolean')
+        if local:
+            errors.extend(prefix + error for error in local)
+            continue
+        context = entry['context'].strip().casefold()
+        for name in [entry['term']] + entry.get('aliases', []):
+            key = (context, name.strip().casefold())
+            if key in names:
+                errors.append(prefix + f'name already used in this context by entry {names[key]}')
+            else:
+                names[key] = index
+        try:
+            rel = Path(entry['definition'])
+            if len(rel.parts) != 2 or rel.parts[0] != 'facts' or rel.suffix != '.md':
+                raise RecordError('definition must reference facts/*.md')
+            p = contained_file(brain, Path(brain).absolute() / rel)
+            fm, _ = parse(p.read_text(encoding='utf-8'))
+            if fm.get('record_version') != 1 or validate(fm, 'fact'):
+                raise RecordError('definition must be a valid versioned fact')
+            if not nonblank(fm.get('context')) or fm['context'].strip().casefold() != context:
+                raise RecordError('definition context must match glossary context')
+        except (OSError, UnicodeError, RecordError) as e:
+            # Only controlled RecordError messages may contain input diagnostics.
+            reason = str(e) if isinstance(e, RecordError) else 'definition cannot be read'
+            errors.append(prefix + reason)
+    return errors

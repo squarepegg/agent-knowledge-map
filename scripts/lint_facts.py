@@ -12,7 +12,7 @@ today = datetime.date.today()
 ROOTS = [p for p in (os.environ.get("BRAIN_REPOS_ROOT"), os.path.expanduser("~/projects")) if p]
 SECRET = re.compile(r'AKIA[0-9A-Z]{16}|eyJ[\w-]{20,}\.[\w-]{10,}\.[\w-]+|(?i:(password|secret|api[_-]?key|token)\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{16,})')
 ABSOLUTE = re.compile(r'\b(always|never|guaranteed|impossible|every single)\b', re.I)
-HARD = ("PARSE", "SECRET", "FIELD", "REQ", "RECORD")
+HARD = ("PARSE", "SECRET", "FIELD", "REQ", "RECORD", "GLOSSARY")
 
 unverified_facts = [0]   # count of verified: false facts seen by the last lint() call
 
@@ -40,6 +40,15 @@ def lint():
         require_evidence = _records.evidence_required(B)
     except _records.RecordError:
         issues.append('PARSE brain.config.yaml: invalid configuration (require_evidence must be boolean)')
+    glossary = os.path.join(B, 'glossary.yaml')
+    if os.path.exists(glossary):
+        try:
+            with open(glossary, encoding='utf-8') as f:
+                entries = yaml.safe_load(f)
+            for error in _records.glossary_errors([] if entries is None else entries, B):
+                issues.append('GLOSSARY glossary.yaml: ' + error)
+        except (OSError, UnicodeError, yaml.YAMLError):
+            issues.append('PARSE glossary.yaml: invalid YAML or unreadable file')
     # The same contract used by CLI writers also checks manual Markdown edits.
     for kind, pattern in (('fact', 'facts/*.md'), ('workstream', 'workstreams/*/STATE.md')):
         for p in sorted(glob.glob(os.path.join(B, pattern))):

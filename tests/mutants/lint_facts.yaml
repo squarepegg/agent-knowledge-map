@@ -75,8 +75,8 @@ mutants:
   old: if not fm.get("description") or
   new: if False or
 - id: hard-codes
-  old: HARD = ("PARSE", "SECRET", "FIELD", "REQ")
-  new: HARD = ("PARSE", "SECRET", "FIELD")
+  old: HARD = ("PARSE", "SECRET", "FIELD", "REQ", "RECORD", "GLOSSARY")
+  new: HARD = ("PARSE", "SECRET", "FIELD", "RECORD", "GLOSSARY")
 - id: strict-off
   old: 'if "--strict" in sys.argv and hard: sys.exit(1)'
   new: pass

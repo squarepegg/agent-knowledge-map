@@ -4,3 +4,21 @@
   one_liner: Replace me. One line on what it is and who owns it.
   repos: [example-service]
   core: true
+- record_version: 1
+  term: Verified
+  context: fact-record
+  kind: concept
+  one_liner: A recorded verification attestation with a date and provenance; it does not establish truth.
+  aliases: [verification attestation]
+  definition: facts/brain-record-language.md
+  repos: [agent-knowledge-map]
+  core: false
+- record_version: 1
+  term: Verified
+  context: context-bundle
+  kind: concept
+  one_liner: A presentation label for an explicit versioned verification attestation no older than 90 days.
+  aliases: [verified context label]
+  definition: facts/brain-context-language.md
+  repos: [agent-knowledge-map]
+  core: false

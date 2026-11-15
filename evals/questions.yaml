@@ -85,3 +85,39 @@
     - --budget
     - '4000'
   tier: must
+
+# Scoped vocabulary: find definitions, not inferred implementation truth.
+- id: language-record-verification
+  q: Does a fact verification attestation establish truth?
+  run:
+    cmd:
+    - python3
+    - scripts/brain.py
+    - context
+    - verification attestation fact-record
+    - --budget
+    - '8000'
+  expect:
+  - facts/brain-record-language.md
+  - 'context: fact-record'
+  - does not establish truth
+  tier: must
+  needs:
+  - facts/brain-record-language.md
+- id: language-context-verification
+  q: Can a fact remain verified while context presents it as stale?
+  run:
+    cmd:
+    - python3
+    - scripts/brain.py
+    - context
+    - context-bundle verified stale
+    - --budget
+    - '8000'
+  expect:
+  - facts/brain-context-language.md
+  - 'context: context-bundle'
+  - '90'
+  tier: must
+  needs:
+  - facts/brain-context-language.md

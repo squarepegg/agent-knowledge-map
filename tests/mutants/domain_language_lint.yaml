@@ -1,0 +1,5 @@
+target: scripts/lint_facts.py
+tests: [tests.test_domain_language]
+mutants:
+  - {id: no-glossary-check, old: "for error in _records.glossary_errors([] if entries is None else entries, B):", new: "for error in []:"}
+  - {id: glossary-not-hard, old: '"REQ", "RECORD", "GLOSSARY")', new: '"REQ", "RECORD")'}
