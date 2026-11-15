@@ -5,13 +5,14 @@ import os, sys, glob, re, subprocess, datetime, yaml
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _fm import frontmatter
 import tour_lint
+import _records
 
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 today = datetime.date.today()
 ROOTS = [p for p in (os.environ.get("BRAIN_REPOS_ROOT"), os.path.expanduser("~/projects")) if p]
 SECRET = re.compile(r'AKIA[0-9A-Z]{16}|eyJ[\w-]{20,}\.[\w-]{10,}\.[\w-]+|(?i:(password|secret|api[_-]?key|token)\s*[:=]\s*[\'"]?[A-Za-z0-9/+_-]{16,})')
 ABSOLUTE = re.compile(r'\b(always|never|guaranteed|impossible|every single)\b', re.I)
-HARD = ("PARSE", "SECRET", "FIELD", "REQ")
+HARD = ("PARSE", "SECRET", "FIELD", "REQ", "RECORD")
 
 unverified_facts = [0]   # count of verified: false facts seen by the last lint() call
 
@@ -33,7 +34,28 @@ def repo_dir(r):
 
 def lint():
     issues = []; unverified_facts[0] = 0
+    invalid_records = set()
+    require_evidence = False
+    try:
+        require_evidence = _records.evidence_required(B)
+    except _records.RecordError:
+        issues.append('PARSE brain.config.yaml: invalid configuration (require_evidence must be boolean)')
+    # The same contract used by CLI writers also checks manual Markdown edits.
+    for kind, pattern in (('fact', 'facts/*.md'), ('workstream', 'workstreams/*/STATE.md')):
+        for p in sorted(glob.glob(os.path.join(B, pattern))):
+            rel = os.path.relpath(p, B)
+            try:
+                _records.contained_file(B, p)
+                fm, _ = _records.parse(open(p).read())
+                errors = _records.validate(fm, kind, today, require_evidence)
+                if errors: invalid_records.add(p)
+                for error in errors:
+                    issues.append(f'RECORD {rel}: {error}')
+            except (OSError, _records.RecordError) as e:
+                invalid_records.add(p)
+                issues.append(f'PARSE {rel}: {e}')
     for p in sorted(glob.glob(f"{B}/facts/*.md")):
+        if p in invalid_records: continue
         fm, body = frontmatter(p); rel = os.path.relpath(p, B)
         if fm.get("_parse_error"): issues.append(f"PARSE  {rel}: bad frontmatter"); continue
         unver = fm.get("verified") is False
@@ -64,6 +86,7 @@ def lint():
             except Exception as e: out = []; issues.append(f"ANCHOR {rel}: git error {e}")
             if out: issues.append(f"STALE  {rel}: {len(out)} commit(s) touched {repo}:{path} since {va} (latest: {out[0][:70]})")
     for p in sorted(glob.glob(f"{B}/workstreams/*/STATE.md")):
+        if p in invalid_records: continue
         fm, _ = frontmatter(p); up = d(fm.get("updated"))
         if fm.get("status") in ("active", "blocked") and up and (today - up).days > 21:
             issues.append(f"WS     {os.path.relpath(p, B)}: {fm['status']} but not updated for {(today-up).days}d")

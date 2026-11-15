@@ -20,8 +20,8 @@ mutants:
   old: 'if "/processed/" in f: continue'
   new: pass
 - id: ws-date-wrong
-  old: SLUG=slug, TITLE=title or slug, DATE=str(datetime.date.today()))
-  new: SLUG=slug, TITLE=title or slug, DATE="x")
+  old: title=title or slug, updated=str(datetime.date.today()))
+  new: title=title or slug, updated="x")
 - id: decision-date-wrong
   old: DATE=str(datetime.date.today()))); return p
   new: DATE="x")); return p

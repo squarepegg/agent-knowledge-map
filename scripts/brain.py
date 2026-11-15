@@ -4,6 +4,9 @@
   brain.py note <kind> <title> [body]           append to inbox/<date>-<session>.md   (kind: gotcha|capability|fact|workstream|decision|correction)
   brain.py ws new <slug> [title]                create workstreams/<slug>/STATE.md from the template
   brain.py ws list                              list workstreams (status, updated)
+  brain.py ws complete SLUG --check C --command CMD --result R  attest evidence, mark done
+  brain.py fact verify SLUG --source SOURCE     attest provenance and verification date
+  brain.py context QUERY [--budget BYTES] [--cwd DIR]  bounded whole-record context (minimum 128 bytes)
   brain.py decision <slug> [title]              create decisions/<date>-<slug>.md from the template
   brain.py inbox                                list unprocessed inbox files (for compaction)
   brain.py compact [--write|--archive]          plan inbox compaction (drafts facts/decisions; flags duplicates)
@@ -101,10 +104,17 @@ def render_tpl(name, brain, **kw):
     return t
 
 def ws_new(slug, title=None, brain=None):
+    import _records
     brain = brain or B; slug = slugify(slug); p = f"{brain}/workstreams/{slug}/STATE.md"
     if os.path.exists(p): raise SystemExit(f"exists: {p}")
+    _records.contained_path(brain, p)
     os.makedirs(os.path.dirname(p), exist_ok=True)
-    t = render_tpl("STATE.md", brain, SLUG=slug, TITLE=title or slug, DATE=str(datetime.date.today()))
+    fm, body = _records.parse(open(f'{brain}/templates/STATE.md').read())
+    fm.update(record_version=1, slug=slug, title=title or slug, updated=str(datetime.date.today()))
+    errors = _records.validate(fm, 'workstream')
+    if errors: raise SystemExit('; '.join(errors))
+    t = _records.render(fm, body)
+    if _records.SECRET.search(t): raise SystemExit('refusing secret-like content')
     open(p, "w").write(t); return p
 
 def decision_new(slug, title=None, brain=None):
@@ -127,9 +137,39 @@ def inbox(brain=None):
 def main(a):
     if not a or a[0] in ("-h", "--help"): print(__doc__); return 0
     c, r = a[0], a[1:]
+    if c == 'context' or (c, r[:1]) in (('ws', ['complete']), ('fact', ['verify'])):
+        import argparse
+        import _records
+        parser = argparse.ArgumentParser(prog='brain.py ' + c)
+        if c == 'context':
+            parser.add_argument('query')
+            parser.add_argument('--budget', type=int, default=8000)
+            parser.add_argument('--cwd', default=os.getcwd())
+            args = parser.parse_args(r)
+        else:
+            parser.add_argument('slug')
+            for flag in (('check', 'command', 'result') if c == 'ws' else ('source',)):
+                parser.add_argument('--' + flag, required=True)
+            args = parser.parse_args(r[1:])
+        try:
+            if c == 'context':
+                import _context
+                print(_context.bundle(B, args.query, args.budget, args.cwd), end='')
+            elif c == 'ws':
+                print(_records.complete_workstream(B, args.slug, args.check, args.command, args.result))
+            else:
+                print(_records.verify_fact(B, args.slug, args.source))
+            return 0
+        except (OSError, _records.RecordError) as e:
+            print('refusing: ' + str(e), file=sys.stderr)
+            return 2
     if c == "search" and r: print("\n".join(search(query_words(" ".join(r)))) or "no matches")
     elif c == "note" and len(r) >= 2: print(note(r[0], r[1], " ".join(r[2:])))
-    elif c == "ws" and r[:1] == ["new"] and len(r) >= 2: print(ws_new(r[1], " ".join(r[2:]) or None))
+    elif c == "ws" and r[:1] == ["new"] and len(r) >= 2:
+        import _records
+        try: print(ws_new(r[1], " ".join(r[2:]) or None))
+        except (OSError, _records.RecordError) as e:
+            print('refusing: ' + str(e), file=sys.stderr); return 2
     elif c == "ws" and r[:1] == ["list"]: print("\n".join(ws_list()))
     elif c == "decision" and r: print(decision_new(r[0], " ".join(r[1:]) or None))
     elif c == "inbox": print("\n".join(inbox()) or "inbox empty")

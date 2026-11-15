@@ -1,4 +1,5 @@
 ---
+record_version: 1
 slug: SLUG
 title: TITLE
 status: active   # active|blocked|paused|done

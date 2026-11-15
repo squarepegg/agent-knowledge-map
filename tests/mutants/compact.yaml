@@ -18,11 +18,11 @@ mutants:
   old: if not d[0].startswith("inbox/")]
   new: ']'
 - id: fact-unverified
-  old: 'verified: false\nrecorded_at'
-  new: 'verified: true\nrecorded_at'
+  old: 'verified=False,'
+  new: 'verified=True,'
 - id: fact-confidence
-  old: 'confidence: low'
-  new: 'confidence: high'
+  old: "confidence='low'"
+  new: "confidence='high'"
 - id: fact-body-fallback
   old: item['body'] or item['title']
   new: item['body']

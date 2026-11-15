@@ -32,6 +32,11 @@ Frontmatter: `slug, title, status: active|blocked|paused|done, repos, branches (
 Sections: Goal, Context, Progress, Verification evidence, Next steps, Open questions, References.
 A Progress item is "done" only if a Verification-evidence row (`check | command | result | date`) backs it. Never reword unfinished items to hide them; move them to Next steps. Keep it current-state, not a log.
 
+After running the check, complete with `brain.py ws complete <slug> --check <name> --command <command> --result <observed-result>`.
+It records a dated completion attestation and clears `next`; it does not run the check or prove the result. New workstreams use `record_version: 1`; strict lint checks completion evidence after manual edits too. For legacy brains, enable `require_evidence: true` in `brain.config.yaml` after adding existing completion evidence.
+
+Use `brain.py context "<task>" --budget 8000 --cwd <repo>` for a bounded context bundle. The budget is UTF-8 bytes (minimum 128), including all output; entries are whole and omissions counted. `[verified]` means explicit recorded verification within 90 days, `[stale]` means older, and other material is `[unverified]`. Anchor freshness is unchecked here: use lint. Read omitted STATE.md files directly when needed.
+
 ## 2. Inbox compaction
 Starting from an example (`init --example web-app`, see `examples/README.md`) gives realistic facts, a workstream and tested eval questions to replace with your own. Setup in one command: `brain.py init --org "Acme" --claude` (config, primer, Claude Code import/skills/hooks; idempotent). Capture is automatic with the hooks it installs: `capture_hook.py stop` asks once, after real work, for learnings to be recorded; `capture_hook.py prompt` stores user corrections in the inbox.
 `mine_sessions.py` (after `digest_sessions.py`) proposes inbox entries from recurring errors and user corrections across past sessions. `brain.py compact` prints a deterministic plan (where each item goes, probable duplicates); `--write` drafts unverified facts/decisions, `--archive` moves handled files to `inbox/processed/`. Drafts still need the verification below.
@@ -45,6 +50,7 @@ Starting from an example (`init --example web-app`, see `examples/README.md`) gi
    - `correction` (the user pushed back) → the user is the authority. Search for the rejected claim; if a fact/skill states it, FIX that file (`verify_by: user-confirmed <date>`). Never re-verify a correction against older data and override it. Durable ones also become a "When trigger → do action" row in a `facts/user-instincts.md` (tag `instincts`); drop one-offs.
 3. Dedupe with `brain.py search`; merge into the existing entry and bump `verified_at` rather than appending duplicates.
 4. Verify cheaply before saving (run the command, grep the anchor). Unverified → `verified: false`, `recorded_at`, `confidence: low`.
+   After observing the evidence, `brain.py fact verify <slug> --source "<provenance>"` records verification date and provenance together, preserving the claim. It attests your observation; it does not establish truth.
 5. Formats: capability `id, enables, requires, how, skill?, examples, gotchas?`; glossary `term, kind, one_liner (<=140 chars), repos, skill?, core?`; fact body 2-10 lines incl. fix/command.
 6. `mv` handled files to `inbox/processed/`. Run `brain.py primer` and `brain.py lint`; fix errors.
 7. Keep the PRIMER small: one-line glossary/capability entries only; detail goes in facts or a topic skill.
@@ -58,6 +64,11 @@ Run `brain.py lint`. For each flagged fact re-verify against the anchored code (
 
 ## 5. Topic skills
 When a topic accumulates >~8 facts or is needed repeatedly, create `skills/<topic>/SKILL.md` (frontmatter `name` = dir, trigger-rich `description` ≤1024 chars; terse imperative body). Move detail out of facts, set `skill:` on related glossary/capability entries, rebuild the primer. Symlink `skills/*` into your agent's skills dir.
+
+### Project extension contracts
+When a recurring task requires rediscovering design choices, capture its supported extension point as a fact using `templates/extension-contract.md` (`kind: extension-contract`). Record **need, use, guarantees, boundary, enforcement, example, choices_removed, change_when**. Reference one canonical implementation and an executable project check; validate the actual boundary before marking the fact verified. Keep details out of the primer.
+
+Use and preserve the supported abstraction while its guarantees fit the task. When requirements differ, inspect the implementation, extend or replace the abstraction and its checks, then update the contract. When proposing an abstraction, identify the choices it removes and how violations will be detected. Brain lint checks contract structure; project lint/tests enforce code boundaries. See `docs/brain-abstractions.md` for schemas, migration, evidence limits and the concrete record-writer contract. Writers share `_records.py`; bounded retrieval in `_context.py` reuses existing ranking and workstream selection.
 
 ## 6. Promoting to a shared team brain
 Personal brain → team brain is a rewrite, not a copy.

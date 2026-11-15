@@ -1,7 +1,7 @@
 ---
 title: Example - deploys go through the gitops repo, never kubectl apply
 repos: [example-gitops]
-tags: [deploy]
+tags: [deploy, prod, changes, released]
 anchors: []
 verified: true
 verified_at: '2026-11-09'
