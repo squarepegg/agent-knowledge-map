@@ -5,6 +5,7 @@ import os, sys, glob, re, subprocess, datetime, yaml
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _fm import frontmatter
 import tour_lint
+import clash
 import _records
 
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -119,6 +120,7 @@ def lint():
         if fm.get("_parse_error"): issues.append(f"PARSE  {rel}: bad frontmatter"); continue
         if fm.get("name") != name: issues.append(f"FIELD  {rel}: name '{fm.get('name')}' != dir '{name}'")
         if not fm.get("description") or len(str(fm["description"])) > 1024: issues.append(f"FIELD  {rel}: description missing or > 1024 chars")
+    issues += clash.report(B)
     return issues
 
 if __name__ == "__main__":
