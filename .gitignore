@@ -7,3 +7,4 @@ inbox/*.md
 !inbox/README.md
 !metrics/.gitkeep
 metrics/attempts/
+results/
