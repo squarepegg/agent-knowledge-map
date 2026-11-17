@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- `clash.py`: deterministic context-clash check. Two facts or skills that give opposite directives (use / never use) about the same backticked object are reported; `repos:` scoping, `## Counterexamples` and `clash_ok: [X]` resolve deliberate pairs. `lint_facts.py` reports `CLASH` as advisory (not a hard failure). Evals `clash-detected`, `brain-clash-free`.
+
 ## [0.7.0]
 - `mine_sessions.py`: proposes inbox entries (recurring errors, user corrections) from session digests, deterministically; dedupes against the brain and the inbox.
 - `style.md`: new "Search before you answer" rule, adopted because it moved the measured score: 16/20 -> 19/20 correct with the brain (twice: 19/20 on both runs), fixing exactly the "stopped at the primer" failures (`docs/benchmarks.md`).

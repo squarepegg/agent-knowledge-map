@@ -31,6 +31,7 @@ Tell the agent (primer already does) to run `python3 scripts/brain.py note <kind
 `check_freshness.py` (config `freshness.yaml`) fails when a generated catalog is older than its budget. Catalog writers should use `_guard.write_json_guarded` so a partial API failure cannot overwrite good data.
 
 ## Repo readiness and skill goldens
+- `python3 scripts/clash.py [--strict]` finds context clash: one fact or skill says "use `X`", another "never use `X`". It reads facts and skills, backticked objects only, and skips a `## Counterexamples` section; documents with disjoint `repos:` are different scopes. Resolve a deliberate pair with `clash_ok: [X]` in the frontmatter. `lint_facts.py` reports it as advisory `CLASH`, never a hard failure; prose-only contradictions are not found.
 - `python3 scripts/harness_check.py --all` scores repos under `$BRAIN_REPOS_ROOT` for agent-readiness (instructions, state routing, verification, scope, lifecycle). Heuristic.
 - `python3 scripts/golden_skills.py` checks each skill in `evals/golden/skills.yaml` for frontmatter validity, pinned text, size budget and (optional, `GOLDEN_REPO_PREFIXES=acme-,svc-`) unknown repo references. `--changed origin/main` checks only edited skills.
 - `scripts/apply_verdicts.py` and `scripts/apply_skill_edits.py` apply the output of a verification pass (an agent re-checking facts / skills against code) mechanically: confirmed facts get `verified_at`, doubtful ones go to `review/facts-review.md`; skill edits apply only when the `find` text is unique.

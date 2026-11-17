@@ -121,3 +121,13 @@
   tier: must
   needs:
   - facts/brain-context-language.md
+- id: clash-detected
+  q: Two documents tell an agent opposite things about the same tool; does the brain notice?
+  run: {cmd: [env, BRAIN_DIR=tests/fixtures/clash, python3, scripts/clash.py]}
+  expect: ["CLASH `rsync`", "facts/deploy.md", "skills/deploy/SKILL.md"]
+  tier: must
+- id: brain-clash-free
+  q: Does the brain contradict itself (fact against fact or skill)?
+  run: {cmd: [python3, scripts/clash.py, --strict]}
+  expect: ["no clashes"]
+  tier: must
