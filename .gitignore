@@ -7,4 +7,5 @@ inbox/*.md
 !inbox/README.md
 !metrics/.gitkeep
 metrics/attempts/
+metrics/guard.jsonl
 results/

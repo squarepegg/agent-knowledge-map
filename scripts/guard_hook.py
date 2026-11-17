@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tool-call guard: a per-repo policy that a Claude Code PreToolUse hook enforces, and a replay of recorded sessions against it.
   guard_hook.py hook                         PreToolUse hook: JSON on stdin -> allow (no output), or ask / deny as hookSpecificOutput JSON.
+  guard_hook.py stats [LOG]                  Summarise the decision log (default $GUARD_LOG or $BRAIN_DIR/metrics/guard.jsonl).
   guard_hook.py replay [--root DIR] [--policy FILE] [FILE|GLOB ...]
                                              Run every recorded tool call (pi/omp or Claude Code JSONL) through the policy and count what it would do.
                                              Only sessions whose cwd is under --root (default $BRAIN_REPOS_ROOT or ~/projects) are read, so company sessions never mix in.
@@ -11,9 +12,10 @@ Policy: `.agent-guard.yaml` in the repo (found by walking up to the git root), e
   allow_commands:  regexes; a shell command matching one skips destructive / outside_workdir / indirection (never secrets or deny_commands)
   deny_commands:   regexes; a matching shell command is denied
   secret_paths:    extra folders that count as secrets
+Every judged call appends one line {ts, tool, action, rule, text?} to the log (text only when not allowed, redacted and cut to 100 chars); a log that cannot be written never changes the answer.
 Rules are deterministic text checks, not a sandbox: a command can still build a path the text never shows (the `indirection` rule can ask about that). Opt in by adding
 the hook to .claude/settings.json (docs/integrations.md); the plugin does not install it. A broken policy file makes the hook ask with the reason, never fail open."""
-import glob, json, os, re, sys
+import datetime, glob, json, os, re, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import yaml
 from digest_sessions import clean
@@ -172,16 +174,65 @@ def _verdict(action, reason):
 
 
 def hook(raw, brain, home):
-    """stdin text -> JSON text to print ('' = no opinion)."""
+    """stdin text -> (JSON text to print ('' = no opinion), log record or None when the event is not a judged PreToolUse)."""
     try: ev = json.loads(raw)
-    except ValueError: return ""
-    if not isinstance(ev, dict) or ev.get("hook_event_name") != "PreToolUse": return ""
+    except ValueError: return "", None
+    if not isinstance(ev, dict) or ev.get("hook_event_name") != "PreToolUse": return "", None
     cwd = ev.get("cwd") or os.getcwd()
+    tool = str(ev.get("tool_name") or "")
     try: policy = load_policy(cwd, brain)
-    except (PolicyError, yaml.YAMLError, OSError) as e: return json.dumps(_verdict("ask", f"guard policy invalid: {e}"))
-    call = {"name": str(ev.get("tool_name") or ""), "args": ev.get("tool_input") if isinstance(ev.get("tool_input"), dict) else {}}
+    except (PolicyError, yaml.YAMLError, OSError) as e: return json.dumps(_verdict("ask", f"guard policy invalid: {e}")), {"tool": tool, "action": "ask", "rule": "policy"}
+    call = {"name": tool, "args": ev.get("tool_input") if isinstance(ev.get("tool_input"), dict) else {}}
     action, rule, reason = decide(call, cwd, policy, home)
-    return "" if action == "allow" else json.dumps(_verdict(action, f"guard[{rule}]: {reason}"))
+    rec = {"tool": tool, "action": action, "rule": rule}
+    if action == "allow": return "", rec
+    rec["text"] = clean(call_text(call), 100)   # only what was not allowed: the log is for tuning the policy, not a transcript
+    return json.dumps(_verdict(action, f"guard[{rule}]: {reason}")), rec
+
+
+def log_path(brain): return os.environ.get("GUARD_LOG") or os.path.join(brain, "metrics", "guard.jsonl")
+
+
+def log_line(rec, ts): return json.dumps({"ts": ts, **rec}, sort_keys=True)
+
+
+def append_log(path, rec, ts):
+    """Best effort: a log that cannot be written never changes what the hook answers."""
+    try:
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        with open(path, "a") as f: f.write(log_line(rec, ts) + "\n")
+    except OSError: pass
+
+
+def summarize(records):
+    """Log records -> the same shape replay returns (without sessions): total, actions, rules, samples."""
+    r = {"total": 0, "actions": dict.fromkeys(ACTIONS, 0), "rules": {}, "samples": []}
+    for x in records:
+        if not isinstance(x, dict) or x.get("action") not in ACTIONS: continue
+        r["total"] += 1; r["actions"][x["action"]] += 1
+        if x["action"] != "allow": r["rules"][x.get("rule", "")] = r["rules"].get(x.get("rule", ""), 0) + 1; r["samples"].append((x.get("rule", ""), x["action"], str(x.get("text", ""))))
+    return r
+
+
+def report(r, header):
+    a = r["actions"]
+    print(header)
+    print("  ".join(f"{k} {a[k]}" for k in ACTIONS))
+    print("rules: " + (", ".join(f"{k} {v}" for k, v in sorted(r["rules"].items())) or "none"))
+    seen = {}
+    for rule, action, text in r["samples"]:
+        key = (rule, action, " ".join(text.split()[:2])); seen[key] = seen.get(key, 0) + 1
+    for (rule, action, head), n in sorted(seen.items(), key=lambda kv: (-kv[1], kv[0]))[:15]: print(f"  {n:4d} {action:4s} {rule:16s} {head}")
+
+
+def _stats_cli(argv):
+    path = argv[0] if argv else log_path(os.environ.get("BRAIN_DIR") or os.path.dirname(HERE))
+    if not os.path.isfile(path): print(f"no log at {path}"); return 1
+    rows = []
+    for line in open(path, errors="ignore"):
+        try: rows.append(json.loads(line))
+        except ValueError: pass
+    r = summarize(rows); report(r, f"{r['total']} calls logged ({path})"); return 0
 
 
 def session_calls(path):
@@ -224,23 +275,19 @@ def _replay_cli(argv):
         else: files += sorted(glob.glob(os.path.expanduser(argv[i]))); i += 1
     if not files: files = sorted(sum((glob.glob(os.path.expanduser(g)) for g in ("~/.omp/agent/sessions/*/*.jsonl", "~/.pi/agent/sessions/*/*.jsonl", "~/.claude/projects/*/*.jsonl")), []))
     r = replay(files, root, policy or default_policy(), os.path.expanduser("~"))
-    a = r["actions"]
-    print(f"{r['total']} calls in {r['sessions']} sessions ({r['skipped']} skipped: cwd outside {root})")
-    print("  ".join(f"{k} {a[k]}" for k in ACTIONS))
-    print("rules: " + (", ".join(f"{k} {v}" for k, v in sorted(r["rules"].items())) or "none"))
-    seen = {}
-    for rule, action, text in r["samples"]:
-        key = (rule, action, " ".join(text.split()[:2])); seen[key] = seen.get(key, 0) + 1
-    for (rule, action, head), n in sorted(seen.items(), key=lambda kv: (-kv[1], kv[0]))[:15]: print(f"  {n:4d} {action:4s} {rule:16s} {head}")
+    report(r, f"{r['total']} calls in {r['sessions']} sessions ({r['skipped']} skipped: cwd outside {root})")
     return 0
 
 
 def main(argv):
     if argv[:1] == ["hook"]:
-        out = hook(sys.stdin.read(), os.environ.get("BRAIN_DIR") or os.path.dirname(HERE), os.path.expanduser("~"))
+        brain = os.environ.get("BRAIN_DIR") or os.path.dirname(HERE)
+        out, rec = hook(sys.stdin.read(), brain, os.path.expanduser("~"))
+        if rec: append_log(log_path(brain), rec, datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
         if out: print(out)
         return 0
     if argv[:1] == ["replay"]: return _replay_cli(argv[1:])
+    if argv[:1] == ["stats"]: return _stats_cli(argv[1:])
     print(__doc__.split("Policy:")[0]); return 2
 
 

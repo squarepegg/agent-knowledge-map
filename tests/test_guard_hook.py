@@ -219,6 +219,61 @@ class Hook(unittest.TestCase):
         self.assertEqual(out["permissionDecision"], "ask"); self.assertIn("policy", out["permissionDecisionReason"])
 
 
+class Log(unittest.TestCase):
+    """Every judged call leaves one line in metrics/guard.jsonl: counts live, text only for what was not allowed."""
+    def setUp(self):
+        self.d = os.path.realpath(tempfile.mkdtemp()); self.addCleanup(shutil.rmtree, self.d); os.makedirs(f"{self.d}/repo/.git")
+        self.log = f"{self.d}/metrics/guard.jsonl"
+
+    def run_hook(self, tool, inp, event="PreToolUse", env=None):
+        ev = {"hook_event_name": event, "tool_name": tool, "tool_input": inp, "cwd": f"{self.d}/repo"}
+        return subprocess.run([sys.executable, f"{ROOT}/scripts/guard_hook.py", "hook"], input=json.dumps(ev), capture_output=True, text=True,
+                              env={**os.environ, "BRAIN_DIR": self.d, "HOME": self.d, "PYTHONUSERBASE": USERBASE, **(env or {})})
+
+    def lines(self): return [json.loads(l) for l in open(self.log)]
+
+    def test_allow_ask_and_deny_are_logged_in_order(self):
+        self.run_hook("Bash", {"command": "ls"}); self.run_hook("Bash", {"command": "rm -rf build"}); self.run_hook("Read", {"file_path": "~/.ssh/id_rsa"})
+        a, b, c = self.lines()
+        self.assertEqual((a["tool"], a["action"], a["rule"], "text" in a), ("Bash", "allow", "", False))
+        self.assertEqual((b["action"], b["rule"], b["text"]), ("ask", "destructive", "rm -rf build"))
+        self.assertEqual((c["tool"], c["action"], c["rule"]), ("Read", "deny", "secrets"))
+        for r in (a, b, c): self.assertRegex(r["ts"], r"^20\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
+
+    def test_the_timestamp_is_utc_whatever_the_machine_zone(self):
+        import calendar, time
+        self.run_hook("Bash", {"command": "ls"}, env={"TZ": "Pacific/Kiritimati"})   # UTC+14
+        ts = calendar.timegm(time.strptime(self.lines()[0]["ts"], "%Y-%m-%dT%H:%M:%SZ")); self.assertLess(abs(ts - time.time()), 120)
+
+    def test_logged_text_is_redacted_and_truncated(self):
+        self.run_hook("Bash", {"command": "rm -rf x token=abcdefghijklmnopqrstuvwxyz0123456789"}); self.run_hook("Bash", {"command": "rm -rf x " + "y " * 100})
+        a, b = self.lines(); self.assertNotIn("abcdefghij", a["text"]); self.assertLessEqual(len(b["text"]), 100)
+
+    def test_other_events_and_garbage_are_not_logged(self):
+        self.run_hook("Bash", {"command": "rm -rf x"}, event="PostToolUse")
+        subprocess.run([sys.executable, f"{ROOT}/scripts/guard_hook.py", "hook"], input="nope", capture_output=True, text=True, env={**os.environ, "BRAIN_DIR": self.d})
+        self.assertFalse(os.path.exists(self.log))
+
+    def test_a_broken_policy_is_logged_as_policy(self):
+        open(f"{self.d}/repo/.agent-guard.yaml", "w").write("rules: {destructive: maybe}\n"); self.run_hook("Bash", {"command": "ls"})
+        self.assertEqual([(r["action"], r["rule"]) for r in self.lines()], [("ask", "policy")])
+
+    def test_guard_log_env_moves_the_file_and_an_unwritable_log_never_changes_the_answer(self):
+        other = f"{self.d}/elsewhere/g.jsonl"; r = self.run_hook("Bash", {"command": "rm -rf x"}, env={"GUARD_LOG": other})
+        self.assertTrue(os.path.exists(other)); self.assertFalse(os.path.exists(self.log))
+        blocked = self.run_hook("Bash", {"command": "rm -rf x"}, env={"GUARD_LOG": f"{self.d}/repo/.git"})   # a directory: cannot be opened for append
+        self.assertEqual((blocked.returncode, blocked.stdout), (r.returncode, r.stdout)); self.assertEqual(json.loads(blocked.stdout)["hookSpecificOutput"]["permissionDecision"], "ask")
+
+    def test_stats_summarises_a_log_like_replay(self):
+        for c in ("ls", "rm -rf a", "rm -rf b", "cat ~/.ssh/id_rsa"): self.run_hook("Bash", {"command": c})
+        open(self.log, "a").write("garbage\n{\"x\": 1}\n[1]\n{\"action\": \"maybe\"}\n")
+        r = subprocess.run([sys.executable, f"{ROOT}/scripts/guard_hook.py", "stats", self.log], capture_output=True, text=True); self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("4 calls logged", r.stdout); self.assertIn("allow 1  ask 2  deny 1", r.stdout); self.assertIn("rules: destructive 2, secrets 1\n", r.stdout); self.assertIn("rm -rf", r.stdout)
+
+    def test_stats_without_a_log_says_so(self):
+        r = subprocess.run([sys.executable, f"{ROOT}/scripts/guard_hook.py", "stats", f"{self.d}/none.jsonl"], capture_output=True, text=True); self.assertEqual(r.returncode, 1); self.assertIn("no log", r.stdout + r.stderr)
+
+
 class Replay(unittest.TestCase):
     def setUp(self):
         self.d = os.path.realpath(tempfile.mkdtemp()); self.addCleanup(shutil.rmtree, self.d)
