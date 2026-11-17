@@ -39,17 +39,17 @@ Use `brain.py context "<task>" --budget 8000 --cwd <repo>` for a bounded context
 
 ## 2. Inbox compaction
 Starting from an example (`init --example web-app`, see `examples/README.md`) gives realistic facts, a workstream and tested eval questions to replace with your own. Setup in one command: `brain.py init --org "Acme" --claude` (config, primer, Claude Code import/skills/hooks; idempotent). Capture is automatic with the hooks it installs: `capture_hook.py stop` asks once, after real work, for learnings to be recorded; `capture_hook.py prompt` stores user corrections in the inbox.
-`mine_sessions.py` (after `digest_sessions.py`) proposes inbox entries from recurring errors and user corrections across past sessions. `brain.py compact` prints a deterministic plan (where each item goes, probable duplicates); `--write` drafts unverified facts/decisions, `--archive` moves handled files to `inbox/processed/`. Drafts still need the verification below.
+`mine_sessions.py` (after `digest_sessions.py`) proposes inbox entries from recurring errors and user corrections across past sessions. `brain.py compact` prints a deterministic plan (where each item goes, probable duplicates); `--write` drafts unverified facts/decisions, `--archive` moves handled files to `inbox/processed/`. Drafts still need the verification below. Same-problem items get `~~` and a "Related attempts" list in each draft (precision ~0.5: check before merging).
 1. `brain.py inbox` lists unprocessed files. Read each.
 2. Classify every item:
    - gotcha/learning → `facts/<slug>.md` (template: `templates/fact.md`)
    - capability (new tool/endpoint/access path) → `capabilities.yaml`
    - term/system/env name → `glossary.yaml`
    - workstream progress → that `STATE.md`
-   - decision → `brain.py decision <slug>`
+   - decision → `brain.py decision <slug>`. Fill `Predicted outcome` first; append `Observed` lines later.
    - `correction` (the user pushed back) → the user is the authority. Search for the rejected claim; if a fact/skill states it, FIX that file (`verify_by: user-confirmed <date>`). Never re-verify a correction against older data and override it. Durable ones also become a "When trigger → do action" row in a `facts/user-instincts.md` (tag `instincts`); drop one-offs.
 3. Dedupe with `brain.py search`; merge into the existing entry and bump `verified_at` rather than appending duplicates.
-4. Verify cheaply before saving (run the command, grep the anchor). Unverified → `verified: false`, `recorded_at`, `confidence: low`.
+4. Verify cheaply before saving (run the command, grep the anchor). Model-dependent: `evaluated_on:`. Unverified → `verified: false`, `recorded_at`, `confidence: low`.
    After observing the evidence, `brain.py fact verify <slug> --source "<provenance>"` records verification date and provenance together, preserving the claim. It attests your observation; it does not establish truth.
 5. Formats: capability `id, enables, requires, how, skill?, examples, gotchas?`; glossary `term, kind, one_liner (<=140 chars), repos, skill?, core?`; fact body 2-10 lines incl. fix/command.
 6. `mv` handled files to `inbox/processed/`. Run `brain.py primer` and `brain.py lint`; fix errors.

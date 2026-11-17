@@ -1,0 +1,28 @@
+target: scripts/cluster.py
+tests:
+- tests.test_cluster
+mutants:
+- id: min-shared-off
+  old: "MIN_SHARED = 2"
+  new: "MIN_SHARED = 1"
+- id: threshold-zero
+  old: "THRESHOLD = 0.08"
+  new: "THRESHOLD = 0.0"
+- id: threshold-high
+  old: "THRESHOLD = 0.08"
+  new: "THRESHOLD = 0.5"
+- id: similarity-not-jaccard
+  old: "return len(a & b) / len(a | b) if"
+  new: "return len(a & b) / len(a) if"
+- id: single-link
+  old: "sum(similarity(ws[a], ws[b]) for a in g for b in h) / (len(g) * len(h))"
+  new: "max(similarity(ws[a], ws[b]) for a in g for b in h)"
+- id: stopwords-kept
+  old: "and t not in brain.STOP)"
+  new: ")"
+- id: short-tokens-kept
+  old: "if len(t) > 2 and"
+  new: "if len(t) > 0 and"
+- id: body-ignored
+  old: 'brain.tokens(item["title"] + " " + item["body"])'
+  new: 'brain.tokens(item["title"])'

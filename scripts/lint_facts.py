@@ -77,6 +77,8 @@ def lint():
             if ra and (today - ra).days > 30: issues.append(f"UNVER  {rel}: unverified for {(today-ra).days}d - verify, fix or delete")
         va = d(fm.get("verified_at")) or d(fm.get("recorded_at"))
         if not unver and va and (today - va).days > 90: issues.append(f"OLD    {rel}: verified {(today-va).days}d ago")
+        ev, cur = str(fm.get("evaluated_on") or "").strip(), os.environ.get("BRAIN_MODEL", "").strip()
+        if ev and cur and ev != cur: issues.append(f"MODEL  {rel}: evaluated on '{ev}', current model is '{cur}' - re-verify")
         if not (fm.get("anchors") or fm.get("source") or fm.get("verify_by")): issues.append(f"SOURCE {rel}: no anchors/source/verify_by - say where this comes from")
         if not fm.get("absolutes_ok"):
             for i, line in enumerate(body.splitlines(), 1):

@@ -57,6 +57,12 @@ class Facts(Base):
         for k in ("anchors: []\n", "verify_by: human\n"): open(f"{self.d}/facts/s.md", "w").write(f"---\ntitle: t\nconfidence: high\nverified_at: '{ago(1)}'\n{k}---\nx\n")
         open(f"{self.d}/facts/s.md", "w").write(f"---\ntitle: t\nconfidence: high\nverified_at: '{ago(1)}'\nverify_by: human\n---\nx\n"); self.assertEqual(self.codes(), [])
 
+    def test_evaluated_on_flags_model_mismatch_only_when_brain_model_set(self):
+        self.fact("m", "evaluated_on: opus\n")
+        self.assertNotIn("MODEL", self.codes())
+        set_env(self, BRAIN_MODEL="opus"); self.assertNotIn("MODEL", self.codes())
+        set_env(self, BRAIN_MODEL="gemini"); self.assertIn("MODEL", self.codes())
+
     def test_absolutes(self):
         self.fact("abs", body="line one\nThis will never fail.\nalways too\n"); r = self.lf.lint(); self.assertEqual(len(r), 1); self.assertIn("abs.md:2", r[0]); self.assertIn("'never'", r[0])
         self.fact("abs", fm="absolutes_ok: true\n", body="never\n"); self.assertEqual(self.lf.lint(), [])

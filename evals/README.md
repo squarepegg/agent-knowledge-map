@@ -4,6 +4,7 @@
 |---|---|---|
 | `questions.yaml` | `scripts/eval_run.py` | free, deterministic (CI gate) |
 | `recall.yaml` | `scripts/recall_eval.py` | free, deterministic |
+| `cluster.yaml` | `scripts/cluster_eval.py` | free, deterministic (CI gate: recall >= 0.9, precision >= 0.5 and F1 over the no-grouping baseline, on dev / heldout / blind splits) |
 | `agentic.yaml` | `scripts/agentic_eval.py [--resume]` | model tokens |
 
 ## Attempt log

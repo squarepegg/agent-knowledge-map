@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+- `cluster.py` + `cluster_eval.py` (CI gate): `compact.py` marks inbox items that look like the same recurring problem (`~~`) and lists each sibling's own title and body in every draft; nothing is merged or dropped. Measured on dev/heldout/blind splits: recall 1.00 everywhere, precision 1.00 / 1.00 / 0.50 (related-topic items merge), so it annotates and does not merge (`evals/negative-results.md`). Idea from arXiv 2611.18856.
+- Decision template and drafts gain `Predicted outcome` and `Observed` sections; facts take an optional `evaluated_on:` and lint warns `MODEL` when it differs from `$BRAIN_MODEL` (unset: no warning).
+- Fix: `compact.py` no longer flags drafts written in the same run as duplicates of each other.
 - `guard_hook.py`: opt-in per-repo tool-call policy as a Claude Code PreToolUse hook (rules: secrets, destructive, outside_workdir, indirection; allow/ask/deny; `.agent-guard.yaml`), plus `replay` of recorded sessions to measure what a policy would stop before enforcing it. Heredoc bodies are data, not commands. Eval `guard-replay-counts-what-a-policy-would-stop`.
 - `clash.py`: deterministic context-clash check. Two facts or skills that give opposite directives (use / never use) about the same backticked object are reported; `repos:` scoping, `## Counterexamples` and `clash_ok: [X]` resolve deliberate pairs. `lint_facts.py` reports `CLASH` as advisory (not a hard failure). Evals `clash-detected`, `brain-clash-free`.
 
