@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- `guard_hook.py`: opt-in per-repo tool-call policy as a Claude Code PreToolUse hook (rules: secrets, destructive, outside_workdir, indirection; allow/ask/deny; `.agent-guard.yaml`), plus `replay` of recorded sessions to measure what a policy would stop before enforcing it. Heredoc bodies are data, not commands. Eval `guard-replay-counts-what-a-policy-would-stop`.
 - `clash.py`: deterministic context-clash check. Two facts or skills that give opposite directives (use / never use) about the same backticked object are reported; `repos:` scoping, `## Counterexamples` and `clash_ok: [X]` resolve deliberate pairs. `lint_facts.py` reports `CLASH` as advisory (not a hard failure). Evals `clash-detected`, `brain-clash-free`.
 
 ## [0.7.0]

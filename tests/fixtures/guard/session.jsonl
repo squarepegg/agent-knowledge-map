@@ -1,0 +1,5 @@
+{"type": "session", "cwd": "/work/projects/site"}
+{"type": "message", "message": {"role": "assistant", "content": [{"type": "toolCall", "id": "0", "name": "bash", "arguments": {"command": "ls"}}]}}
+{"type": "message", "message": {"role": "assistant", "content": [{"type": "toolCall", "id": "1", "name": "bash", "arguments": {"command": "rm -rf build"}}]}}
+{"type": "message", "message": {"role": "assistant", "content": [{"type": "toolCall", "id": "2", "name": "read", "arguments": {"path": "/etc/hosts"}}]}}
+{"type": "message", "message": {"role": "assistant", "content": [{"type": "toolCall", "id": "3", "name": "bash", "arguments": {"command": "cat ~/.ssh/id_rsa"}}]}}

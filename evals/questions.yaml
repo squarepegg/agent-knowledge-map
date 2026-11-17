@@ -131,3 +131,8 @@
   run: {cmd: [python3, scripts/clash.py, --strict]}
   expect: ["no clashes"]
   tier: must
+- id: guard-replay-counts-what-a-policy-would-stop
+  q: What would the default tool-call policy do to a recorded session (allow, ask, deny)?
+  run: {cmd: [python3, scripts/guard_hook.py, replay, --root, /work/projects, tests/fixtures/guard/session.jsonl]}
+  expect: ["4 calls in 1 sessions", "allow 1  ask 2  deny 1", "destructive 1", "outside_workdir 1", "secrets 1"]
+  tier: must
