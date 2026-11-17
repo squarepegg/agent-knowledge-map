@@ -1,5 +1,5 @@
 target: scripts/_records.py
-tests: [tests.test_abstractions]
+tests: [tests.test_abstractions, tests.test_lint_primer]
 mutants:
   - {id: accept-unsupported-version, old: "if versioned and (type(version) is not int or version != 1):", new: "if False:"}
   - {id: duplicate-key-guard, old: "len(keys) != len(set(keys))", new: "False"}
@@ -13,3 +13,6 @@ mutants:
   - {id: cleanup-off, old: "if tmp and os.path.exists(tmp):", new: "if False:"}
   - {id: provenance-not-recorded, old: "verify_by=source", new: "verify_by='ignored'"}
   - {id: completion-launders-invalid-fields, old: "errors = [e for e in validate(dict(fm, record_version=1), 'workstream', today)", new: "errors = [e for e in []"}
+  - {id: model-env-ignored, old: "if env:\n        return env", new: "if False:\n        return env"}
+  - {id: model-config-unstripped, old: "return value.strip() if isinstance(value, str) else ''", new: "return value if isinstance(value, str) else ''"}
+  - {id: model-nonstring-accepted, old: "return value.strip() if isinstance(value, str) else ''", new: "return str(value or '')"}

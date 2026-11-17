@@ -63,6 +63,15 @@ class Facts(Base):
         set_env(self, BRAIN_MODEL="opus"); self.assertNotIn("MODEL", self.codes())
         set_env(self, BRAIN_MODEL="gemini"); self.assertIn("MODEL", self.codes())
 
+    def test_model_falls_back_to_config_and_env_wins(self):
+        self.fact("m", "evaluated_on: opus\n"); set_env(self, BRAIN_MODEL="")
+        open(f"{self.d}/brain.config.yaml", "w").write("model: gemini\n"); self.assertIn("MODEL", self.codes())
+        open(f"{self.d}/brain.config.yaml", "w").write("model: opus\n"); self.assertNotIn("MODEL", self.codes())
+        open(f"{self.d}/brain.config.yaml", "w").write("model: ' opus '\n"); self.assertNotIn("MODEL", self.codes())   # surrounding spaces ignored
+        set_env(self, BRAIN_MODEL="gemini"); self.assertIn("MODEL", self.codes())        # env beats config
+        open(f"{self.d}/brain.config.yaml", "w").write("model: [not, a, string]\n"); set_env(self, BRAIN_MODEL="")
+        self.assertNotIn("MODEL", self.codes())                                          # unusable config = unknown model
+
     def test_absolutes(self):
         self.fact("abs", body="line one\nThis will never fail.\nalways too\n"); r = self.lf.lint(); self.assertEqual(len(r), 1); self.assertIn("abs.md:2", r[0]); self.assertIn("'never'", r[0])
         self.fact("abs", fm="absolutes_ok: true\n", body="never\n"); self.assertEqual(self.lf.lint(), [])

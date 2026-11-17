@@ -17,3 +17,8 @@ mutants:
 - {id: several-msg, old: 'if not pick and len(matches) > 1:', new: 'if len(matches) > 1:'}
 - {id: fail-fix-dropped, old: 'f" -> fix:', new: 'f" -> fox:'}
 - {id: branch-fallback, old: '(g("symbolic-ref", "--short", "-q", "HEAD") or g("rev-parse", "--abbrev-ref", "HEAD"))', new: 'g("rev-parse", "--abbrev-ref", "HEAD")'}
+- {id: model-compare-off, old: 'if cur and ev and ev != cur and', new: 'if cur and ev and'}
+- {id: model-unknown-flags, old: 'if cur and ev and ev != cur and', new: 'if ev and ev != cur and'}
+- {id: model-repo-scope, old: 'ev != cur and repo.lower() in [x.lower() for x in as_list(fm.get("repos"))]:', new: 'ev != cur:'}
+- {id: model-not-rendered, old: 'if other_model: L +=', new: 'if False: L +='}
+

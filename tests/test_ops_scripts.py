@@ -45,6 +45,18 @@ class SessionStart(unittest.TestCase):
         self.assertIn("* LIKELY alpha-work", ss.render("s", "b", [a], a, [], []))
         self.assertNotIn("Several match", ss.render("s", "b", [a], None, [], [])); self.assertNotIn("Several match", ss.render("s", "b", [a, b], a, [], []))
 
+    def test_facts_checked_on_another_model(self):
+        d = tempfile.mkdtemp(); self.addCleanup(shutil.rmtree, d); os.makedirs(f"{d}/facts")
+        for n, fm in (("a", "evaluated_on: opus\nrepos: [r]"), ("b", "evaluated_on: gemini\nrepos: [r]"), ("c", "repos: [r]"), ("e", "evaluated_on: opus\nrepos: [other]")):
+            open(f"{d}/facts/{n}.md", "w").write(f"---\ntitle: fact {n}\n{fm}\n---\nx\n")
+        old = os.environ.pop("BRAIN_MODEL", None)
+        self.addCleanup(lambda: os.environ.__setitem__("BRAIN_MODEL", old) if old is not None else os.environ.pop("BRAIN_MODEL", None))
+        self.assertEqual(ss.other_model_facts("r", d), [])                                      # model unknown: compare nothing
+        os.environ["BRAIN_MODEL"] = "gemini"
+        self.assertEqual(ss.other_model_facts("R", d), ["fact a (evaluated on opus, now gemini)"])   # not b (same), c (none), e (other repo)
+        self.assertIn("fact a", ss.render("r", "", [], None, [], [], ss.other_model_facts("r", d)))
+        self.assertNotIn("another model", ss.render("r", "", [], None, [], []))
+
     def test_end_to_end_in_a_brain(self):
         d = tempfile.mkdtemp(); self.addCleanup(shutil.rmtree, d)
         os.makedirs(f"{d}/workstreams/w1"); os.makedirs(f"{d}/facts")

@@ -11,6 +11,8 @@ The brain is plain files plus a CLI, so wiring is a few lines per agent.
 Symlink `skills/*` into the agent's skills directory (`~/.claude/skills/`, `~/.agents/skills/`, ...).
 
 ## Session-start context (workstream + probes + repo facts)
+Model-dependent facts take `evaluated_on: <model>`. The current model comes from `$BRAIN_MODEL`, else `model:` in `brain.config.yaml` (neither set: nothing is compared). `lint_facts.py` reports `MODEL` and `session_start.py` lists this repo's facts checked on another model. Nothing sets the variable for you: export it in your agent launcher, or pin `model:` in the config.
+
 `python3 scripts/session_start.py` prints environment probes (from `probes.yaml`), the active workstreams that match the current repo/branch (marking a LIKELY one only when exactly one has branch evidence) and the fact titles for the repo.
 
 Claude Code `~/.claude/settings.json`:
