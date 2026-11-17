@@ -15,6 +15,8 @@ A git-versioned, plain-text knowledge base that persists across agent sessions a
 | `decisions/YYYY-MM-DD-<slug>.md` | Append-only; supersede with a new file, never edit |
 | `inbox/<date>-<session>.md` | Per-session append-only notes; processed → `inbox/processed/` |
 | `skills/<topic>/SKILL.md` | Deep knowledge for one system, once a topic outgrows facts |
+| `scripts/clash.py` | Opposite "use/never use `X`" directives across facts and skills (lint `CLASH`) |
+| `scripts/guard_hook.py` | Opt-in PreToolUse policy; `replay` tests it on past sessions first |
 | `scripts/lint_facts.py` | Flags facts whose anchors changed since `verified_at`, old/unverified facts, stale workstreams, secrets |
 
 **Never write secrets, tokens, personal data or credentials into any brain file.** Prefer `anchors` (`repo@path-glob`) over copying code.
