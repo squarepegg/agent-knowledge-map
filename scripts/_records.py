@@ -169,6 +169,19 @@ def evidence_required(brain):
     return value
 
 
+def current_model(brain):
+    """The model this session runs on: $BRAIN_MODEL, else `model:` in brain.config.yaml, else '' (unknown: nothing is compared)."""
+    env = os.environ.get('BRAIN_MODEL', '').strip()
+    if env:
+        return env
+    p = Path(brain) / 'brain.config.yaml'
+    try:
+        value = (yaml.safe_load(p.read_text(encoding='utf-8')) or {}).get('model')
+    except (OSError, AttributeError, yaml.YAMLError):
+        return ''
+    return value.strip() if isinstance(value, str) else ''
+
+
 def record_path(brain, kind, slug):
     if not re.fullmatch(r'[a-z0-9]+(?:-[a-z0-9]+)*', slug):
         raise RecordError('use a record slug, not a path or filename')

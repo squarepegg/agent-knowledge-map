@@ -9,7 +9,7 @@
   brain.py context QUERY [--budget BYTES] [--cwd DIR]  bounded whole-record context (minimum 128 bytes)
   brain.py decision <slug> [title]              create decisions/<date>-<slug>.md from the template
   brain.py inbox                                list unprocessed inbox files (for compaction)
-  brain.py compact [--write|--archive]          plan inbox compaction (drafts facts/decisions; flags duplicates)
+  brain.py compact [--write|--archive|--group]  plan inbox compaction (drafts facts/decisions; flags duplicates; --group annotates same-problem items)
   brain.py init [--org N] [--claude] ...        one-command setup (see scripts/init_brain.py)
   brain.py primer | lint [--strict]             build PRIMER.md / lint the brain"""
 import math, os, sys, glob, re, datetime, subprocess

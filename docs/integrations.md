@@ -11,6 +11,8 @@ The brain is plain files plus a CLI, so wiring is a few lines per agent.
 Symlink `skills/*` into the agent's skills directory (`~/.claude/skills/`, `~/.agents/skills/`, ...).
 
 ## Session-start context (workstream + probes + repo facts)
+Model-dependent facts take `evaluated_on: <model>`. The current model comes from `$BRAIN_MODEL`, else `model:` in `brain.config.yaml` (neither set: nothing is compared). `lint_facts.py` reports `MODEL` and `session_start.py` lists this repo's facts checked on another model. Nothing sets the variable for you: export it in your agent launcher, or pin `model:` in the config.
+
 `python3 scripts/session_start.py` prints environment probes (from `probes.yaml`), the active workstreams that match the current repo/branch (marking a LIKELY one only when exactly one has branch evidence) and the fact titles for the repo.
 
 Claude Code `~/.claude/settings.json`:
@@ -31,6 +33,12 @@ Tell the agent (primer already does) to run `python3 scripts/brain.py note <kind
 `check_freshness.py` (config `freshness.yaml`) fails when a generated catalog is older than its budget. Catalog writers should use `_guard.write_json_guarded` so a partial API failure cannot overwrite good data.
 
 ## Repo readiness and skill goldens
+- `python3 scripts/clash.py [--strict]` finds context clash: one fact or skill says "use `X`", another "never use `X`". It reads facts and skills, backticked objects only, and skips a `## Counterexamples` section; documents with disjoint `repos:` are different scopes. Resolve a deliberate pair with `clash_ok: [X]` in the frontmatter. `lint_facts.py` reports it as advisory `CLASH`, never a hard failure; prose-only contradictions are not found.
+- `scripts/guard_hook.py` is an opt-in tool-call policy for Claude Code (the plugin does not install it). Add to `.claude/settings.json`:
+  `{"hooks": {"PreToolUse": [{"matcher": "Bash|Read|Write|Edit|MultiEdit|Grep|Glob", "hooks": [{"type": "command", "command": "python3 /path/to/scripts/guard_hook.py hook"}]}]}}`.
+  Policy: `.agent-guard.yaml` in the repo (found up to the git root) else `$BRAIN_DIR/guard.yaml` else the default (secrets: deny; destructive, outside_workdir: ask; indirection: allow); keys and semantics are in the script's docstring. Text rules, not a sandbox.
+  Every judged call appends `{ts, tool, action, rule, text?}` to `$BRAIN_DIR/metrics/guard.jsonl` (override with `GUARD_LOG`; git-ignored; `text` only for ask/deny, redacted, 100 chars; a write failure never changes the answer). `python3 scripts/guard_hook.py stats` summarises it in the same format as `replay`, so live and recorded numbers compare directly.
+  Calibrate before enforcing: `python3 scripts/guard_hook.py replay --root ~/projects/me` runs your recorded pi/omp/Claude Code sessions (only those whose cwd is under `--root`) through the policy and prints allow/ask/deny counts, per rule, and the most frequent flagged commands. On 3,758 recorded personal-repo calls the default asked on 28% (mostly `cd` to a sibling repo or `/tmp`); with `allow_paths: [~/projects/me, /tmp]` it asked on 13% and denied 10 calls that touched `~/.ssh`, `~/.aws` or similar.
 - `python3 scripts/harness_check.py --all` scores repos under `$BRAIN_REPOS_ROOT` for agent-readiness (instructions, state routing, verification, scope, lifecycle). Heuristic.
 - `python3 scripts/golden_skills.py` checks each skill in `evals/golden/skills.yaml` for frontmatter validity, pinned text, size budget and (optional, `GOLDEN_REPO_PREFIXES=acme-,svc-`) unknown repo references. `--changed origin/main` checks only edited skills.
 - `scripts/apply_verdicts.py` and `scripts/apply_skill_edits.py` apply the output of a verification pass (an agent re-checking facts / skills against code) mechanically: confirmed facts get `verified_at`, doubtful ones go to `review/facts-review.md`; skill edits apply only when the `find` text is unique.

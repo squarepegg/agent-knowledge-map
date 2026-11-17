@@ -1,0 +1,19 @@
+target: scripts/cluster_eval.py
+tests:
+- tests.test_cluster
+mutants:
+- id: precision-gate-off
+  old: '("precision", c["precision"] >= mp)'
+  new: '("precision", True)'
+- id: recall-gate-off
+  old: '("recall", c["recall"] >= mr)'
+  new: '("recall", True)'
+- id: gain-gate-off
+  old: '("gain", c["f1"] - b["f1"] >= mg)'
+  new: '("gain", True)'
+- id: blind-split-dropped
+  old: 'for split in ("dev", "heldout", "blind"):'
+  new: 'for split in ("dev", "heldout"):'
+- id: recall-uses-pred
+  old: "r = tp / len(gold) if gold else 1.0"
+  new: "r = tp / len(pred) if pred else 1.0"

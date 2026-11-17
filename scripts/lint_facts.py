@@ -5,6 +5,7 @@ import os, sys, glob, re, subprocess, datetime, yaml
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _fm import frontmatter
 import tour_lint
+import clash
 import _records
 
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -76,6 +77,8 @@ def lint():
             if ra and (today - ra).days > 30: issues.append(f"UNVER  {rel}: unverified for {(today-ra).days}d - verify, fix or delete")
         va = d(fm.get("verified_at")) or d(fm.get("recorded_at"))
         if not unver and va and (today - va).days > 90: issues.append(f"OLD    {rel}: verified {(today-va).days}d ago")
+        ev, cur = str(fm.get("evaluated_on") or "").strip(), _records.current_model(B)
+        if ev and cur and ev != cur: issues.append(f"MODEL  {rel}: evaluated on '{ev}', current model is '{cur}' - re-verify")
         if not (fm.get("anchors") or fm.get("source") or fm.get("verify_by")): issues.append(f"SOURCE {rel}: no anchors/source/verify_by - say where this comes from")
         if not fm.get("absolutes_ok"):
             for i, line in enumerate(body.splitlines(), 1):
@@ -119,6 +122,7 @@ def lint():
         if fm.get("_parse_error"): issues.append(f"PARSE  {rel}: bad frontmatter"); continue
         if fm.get("name") != name: issues.append(f"FIELD  {rel}: name '{fm.get('name')}' != dir '{name}'")
         if not fm.get("description") or len(str(fm["description"])) > 1024: issues.append(f"FIELD  {rel}: description missing or > 1024 chars")
+    issues += clash.report(B)
     return issues
 
 if __name__ == "__main__":

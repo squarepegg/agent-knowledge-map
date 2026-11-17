@@ -55,7 +55,7 @@ More (hooks, scheduling, readiness checks): [docs/integrations.md](docs/integrat
 | `evals/` | `questions.yaml` (deterministic), `agentic.yaml` (model-graded), `negative-results.md` |
 | `tests/` + `tests/mutants/` | unit tests, hand-written mutants, grandfather list, legacy mutation scores |
 | `probes.yaml`, `freshness.yaml`, `maintenance.yaml` | environment probes, catalog age budgets, scheduled upkeep steps |
-| `scripts/` | core: `brain.py`, `init_brain.py`, `compact.py`, `build_primer.py`, `lint_facts.py`, `tour_lint.py`; session: `session_start.py`, `capture_hook.py`, `digest_sessions.py`, `mine_sessions.py`; upkeep: `maintain.py`, `check_freshness.py`, `_guard.py`; trust: `eval_run.py`, `recall_eval.py`, `agentic_eval.py`, `agentic_ab.py`, `mutation_check.py`, `auto_mutate.py`, `golden_skills.py`, `harness_check.py`; verification: `apply_verdicts.py`, `apply_skill_edits.py` |
+| `scripts/` | core: `brain.py`, `init_brain.py`, `compact.py` (+ `cluster.py`, same-problem grouping), `build_primer.py`, `lint_facts.py` (runs `clash.py`: opposite directives about one tool in two documents), `tour_lint.py`; session: `session_start.py`, `capture_hook.py`, `digest_sessions.py`, `mine_sessions.py`; upkeep: `maintain.py`, `check_freshness.py`, `_guard.py`; trust: `eval_run.py`, `recall_eval.py`, `cluster_eval.py`, `agentic_eval.py`, `agentic_ab.py`, `mutation_check.py`, `auto_mutate.py`, `golden_skills.py`, `harness_check.py`, `guard_hook.py` (opt-in tool-call policy hook, decision log and session replay); verification: `apply_verdicts.py`, `apply_skill_edits.py` |
 | `examples/` | four invented, tested example brains (data team, web app, platform/infra, solo developer) |
 | `docs/integrations.md` | hook, schedule and agent wiring; what is deliberately left out |
 
@@ -65,6 +65,7 @@ More (hooks, scheduling, readiness checks): [docs/integrations.md](docs/integrat
 | Unit tests | `python -m unittest discover -s tests` | CI every push |
 | Deterministic evals (question → lookup → expected substrings) | `python scripts/eval_run.py` | CI every push |
 | Retrieval recall (symptom query → the right file, recall@1/@5) | `python scripts/recall_eval.py` | CI every push |
+| Inbox clustering (same-problem grouping; dev / heldout / blind) | `python scripts/cluster_eval.py` | CI every push |
 | Hand-written mutation gate (every mutant must be killed) | `python scripts/mutation_check.py tests/mutants/<script>.yaml` | CI every push |
 | Auto-mutation ratchet for scripts without hand-written mutants | `python scripts/auto_mutate.py --check` | weekly CI |
 | Agentic eval (fresh agent answers real questions) | `AGENTIC_CMD='claude -p {prompt}' python scripts/agentic_eval.py` | manual/weekly; costs tokens |

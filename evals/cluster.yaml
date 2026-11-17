@@ -1,0 +1,38 @@
+# Inbox clustering (scripts/cluster_eval.py): items as `brain.py note` would record them, with the recurring problem they belong to.
+# `group` = gold problem id (items sharing it are the same recurring problem, distractors have a unique group). Phrase titles the way a
+# different session would, not as copies. dev: the threshold in cluster.py was tuned here. heldout: never used for tuning.
+- {split: dev, group: pool, kind: gotcha, title: pool exhausted errors under load, body: "hikari pool size was 10; raising it to 30 stopped the timeouts"}
+- {split: dev, group: pool, kind: gotcha, title: db connections time out after every deploy, body: "old pods kept their connections so the pool was exhausted again; set max lifetime"}
+- {split: dev, group: pool, kind: decision, title: raise the connection pool size, body: "maximumPoolSize 30 in hikari; timeouts stopped after the change"}
+- {split: dev, group: cicache, kind: gotcha, title: ci installs stale node_modules from cache, body: "cache key ignored the lockfile so old dependencies came back; add package-lock hash to the key"}
+- {split: dev, group: cicache, kind: gotcha, title: build passes locally but fails in ci with an old dependency version, body: "npm cache key lacked the lockfile hash"}
+- {split: dev, group: lag, kind: gotcha, title: consumer lag grows after a rebalance, body: "lag climbs for ten minutes when a pod restarts and partitions rebalance"}
+- {split: dev, group: lag, kind: fact, title: lag alert fires during rebalance storms, body: "alert on consumer lag is noisy while partitions rebalance; wait for the group to settle"}
+- {split: dev, group: lag, kind: decision, title: silence consumer lag alert for five minutes after deploy, body: "rebalance after a restart makes lag spike then recover"}
+- {split: dev, group: d1, kind: gotcha, title: kafka topic retention is seven days, body: "older events are gone; replay needs the archive bucket"}
+- {split: dev, group: d2, kind: gotcha, title: ci runner out of disk space, body: "docker layers fill the runner; prune images at the end of the job"}
+- {split: dev, group: d3, kind: fact, title: staging database connection string lives in the vault, body: "read it from vault path staging/db, not from env files"}
+- {split: dev, group: d4, kind: gotcha, title: timezone bug in the weekly report, body: "dates were converted twice so Sunday events moved to Monday"}
+- {split: heldout, group: flaky, kind: gotcha, title: checkout test is flaky on friday evenings, body: "the test uses the wall clock; it fails when the date crosses midnight utc"}
+- {split: heldout, group: flaky, kind: gotcha, title: intermittent failure in the order tests around midnight, body: "clock dependent assertion, freeze time in the fixture"}
+- {split: heldout, group: flaky, kind: decision, title: freeze the clock in all date sensitive tests, body: "added a fixture that pins time; the flaky checkout failures stopped"}
+- {split: heldout, group: oom, kind: gotcha, title: worker pod killed with exit code 137, body: "memory limit of 512Mi too small for the batch job"}
+- {split: heldout, group: oom, kind: gotcha, title: batch job restarts in a loop with oomkilled, body: "raise the memory limit, batch size 10k holds everything in memory"}
+- {split: heldout, group: s3, kind: gotcha, title: uploads fail with access denied from the lambda, body: "bucket policy missing the lambda role; add s3 put object"}
+- {split: heldout, group: s3, kind: fact, title: lambda role needs put object on the exports bucket, body: "access denied until the policy lists the role arn"}
+- {split: heldout, group: x1, kind: gotcha, title: kafka consumer group id must be unique per environment, body: "staging and prod shared a group and stole partitions"}
+- {split: heldout, group: x2, kind: gotcha, title: ci job fails when the runner has no docker socket, body: "use the dind service in the pipeline"}
+- {split: heldout, group: x3, kind: fact, title: lambda timeout default is three seconds, body: "set it to 30 for the export function"}
+- {split: heldout, group: x4, kind: gotcha, title: weekly report email goes to spam, body: "missing dkim record on the sending domain"}
+- {split: blind, group: tls, kind: gotcha, title: https calls fail with certificate verify failed in the container, body: "the base image has no ca bundle; install ca-certificates"}
+- {split: blind, group: tls, kind: gotcha, title: ssl handshake error only inside docker, body: "missing root certificates in the slim image, works on the laptop"}
+- {split: blind, group: tls, kind: decision, title: add ca certificates to the base image, body: "certificate verify errors disappeared after installing the bundle"}
+- {split: blind, group: migr, kind: gotcha, title: migration locks the orders table for minutes, body: "adding a column with a default rewrote the table; use a nullable column then backfill"}
+- {split: blind, group: migr, kind: fact, title: alter table with default blocks writes on old postgres, body: "backfill in batches instead of one statement to avoid the table lock"}
+- {split: blind, group: env, kind: gotcha, title: feature flag works in staging but not in production, body: "the flag was only created in the staging project; create it in prod too"}
+- {split: blind, group: env, kind: gotcha, title: flag evaluates false in prod, body: "production flag project was missing the new flag key"}
+- {split: blind, group: b1, kind: gotcha, title: docker build is slow because of a huge context, body: "add a dockerignore for the data folder"}
+- {split: blind, group: b2, kind: gotcha, title: postgres table lock monitoring query, body: "pg_locks joined to pg_stat_activity shows who blocks"}
+- {split: blind, group: b3, kind: fact, title: production deploys happen from the main branch only, body: "staging deploys come from any pull request"}
+- {split: blind, group: b4, kind: gotcha, title: certificate for the internal api expires in march, body: "renewal is manual, ask the platform team"}
+- {split: blind, group: b5, kind: gotcha, title: base image upgrade broke the python build, body: "pin the image digest"}

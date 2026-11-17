@@ -1,6 +1,7 @@
 target: scripts/compact.py
 tests:
 - tests.test_capture
+- tests.test_cluster
 mutants:
 - id: parse-body-start
   old: 'out.append({"kind": m.group(1), "title": m.group(2).strip(), "body": text[m.end():end].strip()})'
@@ -51,5 +52,26 @@ mutants:
   old: 'if "--archive" in argv:'
   new: 'if False:'
 - id: cli-write
-  old: plan(write="--write" in argv)
-  new: plan(write=True)
+  old: 'plan(write="--write" in argv, group="--group" in argv)'
+  new: 'plan(write=True, group="--group" in argv)'
+- id: cli-group
+  old: 'group="--group" in argv)'
+  new: 'group=True)'
+- id: dups-after-draft-written
+  old: 'dup = dups[n]'
+  new: 'dup = duplicate_of(item, brain_dir)'
+- id: sibling-body-dropped
+  old: '(f": {s[''body'']}" if s[''body''] else "")'
+  new: '""'
+- id: decision-draft-no-prediction
+  old: '## Predicted outcome\n## Observed\n'
+  new: ''
+- id: sibling-includes-self
+  old: '[j for j in g if j != i]'
+  new: '[j for j in g]'
+- id: group-default-on
+  old: 'write=False, group=False):'
+  new: 'write=False, group=True):'
+- id: group-not-annotated
+  old: 'if sib else ""))'
+  new: 'if False else ""))'

@@ -1,0 +1,307 @@
+target: scripts/guard_hook.py
+tests:
+- tests.test_guard_hook
+mutants:
+- id: default-secrets-ask
+  old: '"secrets": "deny", "destructive"'
+  new: '"secrets": "ask", "destructive"'
+- id: default-destructive-allow
+  old: '"destructive": "ask"'
+  new: '"destructive": "allow"'
+- id: default-outside-allow
+  old: '"outside_workdir": "ask"'
+  new: '"outside_workdir": "allow"'
+- id: default-indirection-ask
+  old: '"indirection": "allow"}'
+  new: '"indirection": "ask"}'
+- id: key-secret-paths-unknown
+  old: '"deny_commands", "secret_paths")'
+  new: '"deny_commands")'
+- id: unknown-key-accepted
+  old: 'if k not in KEYS: raise PolicyError(f"unknown key ''{k}''")'
+  new: pass
+- id: unknown-rule-accepted
+  old: 'if r not in RULES: raise PolicyError(f"unknown rule ''{r}''")'
+  new: pass
+- id: bad-action-accepted
+  old: 'if a not in ACTIONS: raise PolicyError(f"rule ''{r}'': action must be allow, ask or deny, not {a!r}")'
+  new: pass
+- id: string-list-accepted
+  old: if not isinstance(v, list) or not all(
+  new: if not all(
+- id: regex-unchecked
+  old: 'if k.endswith("commands"):'
+  new: 'if False:'
+- id: non-mapping-accepted
+  old: 'if not isinstance(user, dict): raise PolicyError("policy must be a mapping")'
+  new: pass
+- id: rules-not-mapping
+  old: 'if not isinstance(v, dict): raise PolicyError("rules must be a mapping")'
+  new: pass
+- id: search-past-git-root
+  old: 'if os.path.exists(os.path.join(d, ".git")) or os.path.dirname(d) == d: break'
+  new: 'if os.path.dirname(d) == d: break'
+- id: brain-file-name
+  old: os.path.join(brain, "guard.yaml")
+  new: os.path.join(brain, "guard.yml")
+- id: repo-file-ignored
+  old: "if os.path.isfile(f): return merge(yaml.safe_load(open(f)) or {})\n        if os.path.exists"
+  new: "if False: return merge(yaml.safe_load(open(f)) or {})\n        if os.path.exists"
+- id: within-prefix
+  old: return p == folder or p.startswith(folder.rstrip("/") + "/")
+  new: return p.startswith(folder)
+- id: within-not-itself
+  old: return p == folder or p.startswith(
+  new: return p.startswith(
+- id: tilde-alone
+  old: if p == "~" or p.startswith("~/")
+  new: if p.startswith("~/")
+- id: relative-unresolved
+  old: t if t.startswith("/") else os.path.join(cwd, t)
+  new: t
+- id: option-value-kept
+  old: 'if t.startswith("-"): t = t.partition("=")[2].strip("''\"")'
+  new: pass
+- id: url-checked
+  old: 'if "://" in tok: return False'
+  new: pass
+- id: dotdot-ignored
+  old: 'or DOTDOT.search(tok): return True'
+  new: '): return True'
+- id: roots-etc-missing
+  old: ROOTS = frozenset("etc usr
+  new: ROOTS = frozenset("usr
+- id: write-unchecked
+  old: '{"read", "write", "edit"'
+  new: '{"read", "edit"'
+- id: edit-unchecked
+  old: '"write", "edit", "multiedit"'
+  new: '"write", "multiedit"'
+- id: grep-unchecked
+  old: '"glob", "grep"}'
+  new: '"glob"}'
+- id: hashline-ignored
+  old: HASHLINE.findall(str(a.get("input") or ""))
+  new: '[]'
+- id: file-path-key
+  old: PATH_KEYS = ("file_path", "path"
+  new: PATH_KEYS = ("path"
+- id: bash-cwd-ignored
+  old: eff = cwd if not a.get("cwd") else _resolve(str(a["cwd"]), cwd, home)
+  new: eff = cwd
+- id: bash-cwd-not-checked
+  old: 'if kind == "shell" and not any(_within(eff, f) for f in inside): out ='
+  new: 'if False: out ='
+- id: path-tool-needs-pathish
+  old: (kind == "path" or _pathish(tok))
+  new: _pathish(tok)
+- id: dev-null-checked
+  old: 'res != "/dev/null" and '
+  new: ''
+- id: secret-aws-missing
+  old: '"~/.aws", '
+  new: ''
+- id: secret-gh-missing
+  old: '"~/.config/gh", '
+  new: ''
+- id: secret-netrc-missing
+  old: '|\.netrc'
+  new: ''
+- id: secret-sample-env
+  old: example$|sample$|template$
+  new: example$|template$
+- id: secret-template-env
+  old: example$|sample$|template$
+  new: example$|sample$
+- id: secret-pem-missing
+  old: '|[\w.-]+\.pem'
+  new: ''
+- id: secrets-action-ignored
+  old: hits.append((rules["secrets"], "secrets"
+  new: hits.append(("deny", "secrets"
+- id: deny-commands-ask
+  old: hits.append(("deny", "deny_commands"
+  new: hits.append(("ask", "deny_commands"
+- id: allow-commands-off
+  old: shell_free = kind == "shell" and any(
+  new: shell_free = False and any(
+- id: allow-commands-beats-secrets
+  old: '    secret_dirs = SECRET_DIRS'
+  new: "    if kind == \"shell\" and any(re.search(rx, text) for rx in policy[\"allow_commands\"]): return \"allow\", \"\", \"\"\n    secret_dirs = SECRET_DIRS"
+- id: destructive-action-ignored
+  old: hits.append((rules["destructive"], "destructive"
+  new: hits.append(("ask", "destructive"
+- id: outside-action-ignored
+  old: hits.append((rules["outside_workdir"], "outside_workdir"
+  new: hits.append(("ask", "outside_workdir"
+- id: indirection-action-ignored
+  old: hits.append((rules["indirection"], "indirection"
+  new: hits.append(("ask", "indirection"
+- id: single-quotes-expanded
+  old: s = re.sub(r"'[^']*'", "''", text)
+  new: s = text
+- id: pwd-flagged
+  old: .replace('"$PWD"', "").replace("$PWD", "")
+  new: ''
+- id: allow-hits-kept
+  old: hits = [h for h in hits if h[0] != "allow"]
+  new: pass
+- id: least-strict-wins
+  old: worst = max(
+  new: worst = min(
+- id: heredoc-shell-body-dropped
+  old: return m.group(0) if SHELL_READER.search(before) else m.group(3)
+  new: return m.group(3)
+- id: heredoc-never-dropped
+  old: return m.group(0) if SHELL_READER.search(before) else m.group(3)
+  new: return m.group(0)
+- id: heredoc-opener-rest-dropped
+  old: else m.group(3)
+  new: else ''
+- id: heredoc-terminator-loose
+  old: \n[ \t]*\2[ \t]*(?=\n|$)
+  new: \n[ \t]*\2
+- id: newline-not-a-separator
+  old: CMD = r"(?:^|[;&|(`\n]|
+  new: CMD = r"(?:^|[;&|(`]|
+- id: indirection-newline
+  old: CMDWORD = re.compile(r"(?:^|[;&|\n]\s*)
+  new: CMDWORD = re.compile(r"(?:^|[;&|]\s*)
+- id: interpreter-heredoc
+  old: '|\b(?:python3?|node|perl|ruby)\s+-(?:\s|$)'
+  new: ''
+- id: event-unchecked
+  old: 'or ev.get("hook_event_name") != "PreToolUse": return ""'
+  new: 'or False: return ""'
+- id: yaml-error-uncaught
+  old: 'except (PolicyError, yaml.YAMLError, OSError) as e:'
+  new: 'except PolicyError as e:'
+- id: policy-error-fails-open
+  old: 'return json.dumps(_verdict("ask", f"guard policy invalid: {e}"))'
+  new: return ""
+- id: tool-input-not-dict
+  old: ev.get("tool_input") if isinstance(ev.get("tool_input"), dict) else {}
+  new: ev.get("tool_input")
+- id: session-cwd-last-wins
+  old: cwd = cwd or str(e.get("cwd") or "")
+  new: cwd = str(e.get("cwd") or "")
+- id: claude-format-missing
+  old: elif b.get("type") == "tool_use"
+  new: elif False
+- id: pi-format-missing
+  old: if b.get("type") == "toolCall"
+  new: if False
+- id: outside-root-read
+  old: 'if not cwd or not _within(os.path.abspath(cwd), root): r["skipped"] += 1; continue'
+  new: 'if not cwd: r["skipped"] += 1; continue'
+- id: root-prefix-sibling
+  old: 'def _within(p, folder): return p == folder or p.startswith(folder.rstrip("/") + "/")'
+  new: 'def _within(p, folder): return p == folder or p.startswith(folder.rstrip("/"))'
+- id: sample-not-truncated
+  old: clean(call_text(c), 100)
+  new: clean(call_text(c), 1000)
+- id: sample-not-redacted
+  old: clean(call_text(c), 100)
+  new: call_text(c)[:100]
+- id: allow-counted-as-rule
+  old: 'if action != "allow": r["rules"]'
+  new: 'if True: r["rules"]'
+- id: usage-exit-zero
+  old: print(__doc__.split("Policy:")[0]); return 2
+  new: print(__doc__.split("Policy:")[0]); return 0
+- id: destructive-pattern-1
+  old: CMD + r"rm\s+(?:-\S+\s+)*-\S*[rRf]"
+  new: r"(?!)"
+- id: destructive-pattern-2
+  old: CMD + r"git\s+push\b[^;&|]*?(?:\s--force(?![-\w])|\s-f\b)"
+  new: r"(?!)"
+- id: destructive-pattern-3
+  old: CMD + r"git\s+reset\s+[^;&|]*--hard"
+  new: r"(?!)"
+- id: destructive-pattern-4
+  old: CMD + r"git\s+clean\b[^;&|]*\s-\w*f"
+  new: r"(?!)"
+- id: destructive-pattern-5
+  old: CMD + r"git\s+checkout\b[^;&|]*\s--(?:\s|$)"
+  new: r"(?!)"
+- id: destructive-pattern-6
+  old: CMD + r"git\s+restore\b"
+  new: r"(?!)"
+- id: destructive-pattern-7
+  old: CMD + r"git\s+stash\b(?!\s+(?:list|show)\b)"
+  new: r"(?!)"
+- id: destructive-pattern-8
+  old: CMD + r"sudo\b"
+  new: r"(?!)"
+- id: destructive-pattern-9
+  old: CMD + r"(?:chmod|chown)\s+(?:-\S+\s+)*-\S*R"
+  new: r"(?!)"
+- id: destructive-pattern-10
+  old: r"\b(?:curl|wget)\b[^;&]*\|\s*(?:sudo\s+)?(?:ba|z)?sh\b"
+  new: r"(?!)"
+- id: destructive-pattern-11
+  old: r"(?i)\b(?:drop\s+(?:table|database|schema)|truncate\s+table)\b"
+  new: r"(?!)"
+- id: destructive-pattern-12
+  old: CMD + r"kubectl\s+delete\b"
+  new: r"(?!)"
+- id: destructive-pattern-13
+  old: CMD + r"terraform\s+destroy\b"
+  new: r"(?!)"
+- id: rm-anywhere
+  old: CMD + r"rm\s+
+  new: r"rm\s+
+- id: force-with-lease-flagged
+  old: --force(?![-\w])
+  new: --force
+- id: stash-list-flagged
+  old: git\s+stash\b(?!\s+(?:list|show)\b)
+  new: git\s+stash\b
+- id: log-text-unredacted
+  old: rec["text"] = clean(call_text(call), 100)
+  new: rec["text"] = call_text(call)[:100]
+- id: log-text-untruncated
+  old: rec["text"] = clean(call_text(call), 100)
+  new: rec["text"] = clean(call_text(call), 1000)
+- id: log-text-for-allowed
+  old: '    if action == "allow": return "", rec
+
+    '
+  new: '    if False: return "", rec
+
+    '
+- id: log-write-error-raises
+  old: '    except OSError: pass
+
+
+
+    def summarize'
+  new: '    except OSError: raise
+
+
+
+    def summarize'
+- id: log-env-ignored
+  old: os.environ.get("GUARD_LOG") or os.path.join
+  new: os.path.join
+- id: log-default-name
+  old: '"metrics", "guard.jsonl"'
+  new: '"metrics", "guard.log"'
+- id: log-policy-rule
+  old: '"action": "ask", "rule": "policy"}'
+  new: '"action": "ask", "rule": ""}'
+- id: log-unjudged-logged
+  old: 'if not isinstance(ev, dict) or ev.get("hook_event_name") != "PreToolUse": return "", None'
+  new: 'if not isinstance(ev, dict) or ev.get("hook_event_name") != "PreToolUse": return "", {"tool": "", "action": "allow", "rule": ""}'
+- id: summarize-accepts-any
+  old: 'if not isinstance(x, dict) or x.get("action") not in ACTIONS: continue'
+  new: 'if not isinstance(x, dict): continue'
+- id: summarize-counts-allow-as-rule
+  old: 'if x["action"] != "allow": r["rules"]'
+  new: 'if True: r["rules"]'
+- id: stats-missing-ok
+  old: 'if not os.path.isfile(path): print(f"no log at {path}"); return 1'
+  new: 'if not os.path.isfile(path): print(f"no log at {path}"); return 0'
+- id: ts-not-utc
+  old: datetime.datetime.now(datetime.timezone.utc)
+  new: datetime.datetime.now()

@@ -122,3 +122,10 @@ mutants:
 - id: default-dir
   old: os.environ.get("BRAIN_DIR") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
   new: os.environ.get("BRAIN_DIR") or os.path.expanduser("~/.agents/brain")
+- id: model-mismatch-off
+  old: 'if ev and cur and ev != cur:'
+  new: 'if False:'
+- id: model-flag-when-unset
+  old: 'if ev and cur and ev != cur:'
+  new: 'if ev and ev != cur:'
+

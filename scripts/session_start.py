@@ -9,6 +9,7 @@ import fnmatch, glob, os, subprocess, sys
 import yaml
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 from _fm import frontmatter
+import _records
 B = os.environ.get("BRAIN_DIR") or os.path.dirname(HERE)
 
 def as_list(v): return [str(x) for x in v] if isinstance(v, list) else ([str(v)] if v else [])
@@ -62,7 +63,16 @@ def fact_titles(repo, brain=None):
             out.append(("(unverified) " if fm.get("verified") is False else "") + str(fm.get("title") or os.path.basename(p)))
     return out
 
-def render(repo, branch, matches, pick, probes, facts):
+def other_model_facts(repo, brain=None):
+    """Titles of this repo's facts whose `evaluated_on` differs from the current model (unknown model: none)."""
+    cur = _records.current_model(brain or B); out = []
+    for p in sorted(glob.glob(f"{brain or B}/facts/*.md")):
+        fm, _ = frontmatter(p); ev = str(fm.get("evaluated_on") or "").strip()
+        if cur and ev and ev != cur and repo.lower() in [x.lower() for x in as_list(fm.get("repos"))]:
+            out.append(f"{fm.get('title') or os.path.basename(p)} (evaluated on {ev}, now {cur})")
+    return out
+
+def render(repo, branch, matches, pick, probes, facts, other_model=()):
     L = [f"Brain context for {repo}" + (f" @ {branch}" if branch else "")]
     if probes: L += ["Environment:"] + [f"  {'ok' if ok else 'FAIL'} {p['label'] if 'label' in p else p['id']}" + ("" if ok else f" -> fix: {p.get('fix', '-')}") for p, ok in probes]
     if matches:
@@ -72,6 +82,7 @@ def render(repo, branch, matches, pick, probes, facts):
             L.append(f"  {'* LIKELY ' if w is pick else '- '}{w['slug']} [{w['status']}] {w['file']}{nxt}")
         if not pick and len(matches) > 1: L.append("  Several match: ask the user which one this session belongs to.")
     if facts: L += [f"Facts for this repo ({len(facts)}; `brain.py search` for bodies):"] + [f"  - {t}" for t in facts[:15]]
+    if other_model: L += ["Facts checked on another model (re-verify before relying):"] + [f"  - {t}" for t in other_model[:10]]
     return "\n".join(L)
 
 def main(argv):
@@ -79,7 +90,7 @@ def main(argv):
     repo, branch = git_info(cwd)
     ms = match(load_workstreams(), repo, branch); pick = likely(ms, branch)
     probes = [] if "--no-probes" in argv else [(p, run_probe(p)[0]) for p in load_probes()]
-    print(render(repo, branch, ms, pick, probes, fact_titles(repo)))
+    print(render(repo, branch, ms, pick, probes, fact_titles(repo), other_model_facts(repo)))
     return 0
 
 if __name__ == "__main__":

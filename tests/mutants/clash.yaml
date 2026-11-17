@@ -1,0 +1,58 @@
+target: scripts/clash.py
+tests:
+- tests.test_clash
+mutants:
+- id: window-off
+  old: "WINDOW = 40"
+  new: "WINDOW = 4000"
+- id: window-zero
+  old: "WINDOW = 40"
+  new: "WINDOW = 0"
+- id: no-negative-first
+  old: "        m = NEG.search(sentence); pol = \"-\"\n        if not m: m = POS.search(sentence); pol = \"+\""
+  new: "        m = POS.search(sentence); pol = \"+\"\n        if not m: m = NEG.search(sentence); pol = \"-\""
+- id: only-first-object
+  old: "out += [(pol, norm(objs[int(i)])) for i in re.findall(r\"\\0(\\d+)\\0\", rest)]"
+  new: "out += [(pol, norm(objs[int(first.group(1))]))]"
+- id: counterexamples-read
+  old: "skip = m.group(1).strip().lower().startswith(\"counterexample\")"
+  new: "skip = False"
+- id: skip-never-ends
+  old: "if m: skip = m.group(1)"
+  new: "if m and not skip: skip = m.group(1)"
+- id: dot-splits-sentence
+  old: "SPLIT = re.compile(r\"[.;!?\\n]+\")"
+  new: "SPLIT = re.compile(r\"[.;!?\\n]+|\\0\")"
+- id: semicolon-not-a-boundary
+  old: "SPLIT = re.compile(r\"[.;!?\\n]+\")"
+  new: "SPLIT = re.compile(r\"[.!?\\n]+\")"
+- id: not-normalised
+  old: "def norm(obj): return \" \".join(obj.lower().split())"
+  new: "def norm(obj): return obj"
+- id: same-doc-clashes
+  old: "if p == n: continue"
+  new: "pass"
+- id: ok-filter-dropped
+  old: "if obj in d[\"clash_ok\"]: continue"
+  new: "pass"
+- id: scope-ignored
+  old: "if a[\"repos\"] and b[\"repos\"] and not a[\"repos\"] & b[\"repos\"]: continue"
+  new: "pass"
+- id: unscoped-never-clashes
+  old: "if a[\"repos\"] and b[\"repos\"] and not"
+  new: "if (a[\"repos\"] or b[\"repos\"]) and not"
+- id: unsorted
+  old: "    return sorted(out)"
+  new: "    return list(out)"
+- id: strict-ignored
+  old: "return 1 if lines and \"--strict\" in argv else 0"
+  new: "return 0"
+- id: strict-always
+  old: "return 1 if lines and \"--strict\" in argv else 0"
+  new: "return 1 if lines else 0"
+- id: parse-error-read
+  old: "if fm.get(\"_parse_error\"): continue"
+  new: "pass"
+- id: skills-not-loaded
+  old: "for pattern in (\"facts/*.md\", \"skills/*/SKILL.md\"):"
+  new: "for pattern in (\"facts/*.md\",):"

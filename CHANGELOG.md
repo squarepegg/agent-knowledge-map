@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+- `cluster.py` + `cluster_eval.py` (CI gate): `compact.py --group` (off by default) marks inbox items that look like the same recurring problem (`~~`) and lists each sibling's own title and body in every draft; nothing is merged or dropped. Off by default: in an A/B (`evals/cluster-ab`, haiku, n=5) a model grouping the inbox scored F1 0.95 plain vs 0.90 with the hints. Measured on dev/heldout/blind splits: recall 1.00 everywhere, precision 1.00 / 1.00 / 0.50 (related-topic items merge), so it only annotates (`evals/negative-results.md`). Idea from arXiv 2611.18856.
+- Decision template and drafts gain `Predicted outcome` and `Observed` sections; facts take an optional `evaluated_on:` and lint warns `MODEL` and `session_start.py` lists this repo's facts when it differs from the current model (`$BRAIN_MODEL`, else `model:` in `brain.config.yaml`; neither set: nothing compared).
+- Fix: `compact.py` no longer flags drafts written in the same run as duplicates of each other.
+- `guard_hook.py`: opt-in per-repo tool-call policy as a Claude Code PreToolUse hook (rules: secrets, destructive, outside_workdir, indirection; allow/ask/deny; `.agent-guard.yaml`), plus `replay` of recorded sessions to measure what a policy would stop before enforcing it. Heredoc bodies are data, not commands. Decisions are logged to `metrics/guard.jsonl` and summarised by `guard_hook.py stats`. Eval `guard-replay-counts-what-a-policy-would-stop`.
+- `clash.py`: deterministic context-clash check. Two facts or skills that give opposite directives (use / never use) about the same backticked object are reported; `repos:` scoping, `## Counterexamples` and `clash_ok: [X]` resolve deliberate pairs. `lint_facts.py` reports `CLASH` as advisory (not a hard failure). Evals `clash-detected`, `brain-clash-free`.
+
 ## [0.7.0]
 - `mine_sessions.py`: proposes inbox entries (recurring errors, user corrections) from session digests, deterministically; dedupes against the brain and the inbox.
 - `style.md`: new "Search before you answer" rule, adopted because it moved the measured score: 16/20 -> 19/20 correct with the brain (twice: 19/20 on both runs), fixing exactly the "stopped at the primer" failures (`docs/benchmarks.md`).

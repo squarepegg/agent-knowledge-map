@@ -18,6 +18,8 @@ jobs:
         run: BRAIN_DIR=$PWD python scripts/eval_run.py
       - name: Retrieval recall floor
         run: BRAIN_DIR=$PWD python scripts/recall_eval.py
+      - name: Inbox clustering gate
+        run: BRAIN_DIR=$PWD python scripts/cluster_eval.py
   mutants-plan:
     runs-on: ubuntu-latest
     outputs:
