@@ -52,8 +52,11 @@ mutants:
   old: 'if "--archive" in argv:'
   new: 'if False:'
 - id: cli-write
-  old: plan(write="--write" in argv)
-  new: plan(write=True)
+  old: 'plan(write="--write" in argv, group="--group" in argv)'
+  new: 'plan(write=True, group="--group" in argv)'
+- id: cli-group
+  old: 'group="--group" in argv)'
+  new: 'group=True)'
 - id: dups-after-draft-written
   old: 'dup = dups[n]'
   new: 'dup = duplicate_of(item, brain_dir)'
@@ -66,6 +69,9 @@ mutants:
 - id: sibling-includes-self
   old: '[j for j in g if j != i]'
   new: '[j for j in g]'
+- id: group-default-on
+  old: 'write=False, group=False):'
+  new: 'write=False, group=True):'
 - id: group-not-annotated
   old: 'if sib else ""))'
   new: 'if False else ""))'

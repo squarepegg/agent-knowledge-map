@@ -57,6 +57,13 @@ class Eval(unittest.TestCase):
         self.assertEqual(cluster_eval.prf({frozenset((0, 1))}, {frozenset((0, 1)), frozenset((2, 3))})["recall"], 0.5)
 
 
+class AbGrader(unittest.TestCase):
+    def test_ab_grader_selftest(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("cluster_ab", f"{ROOT}/evals/cluster-ab/cluster_ab.py")
+        m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m); m.selftest()
+
+
 class CompactUse(unittest.TestCase):
     def setUp(self):
         self.d = tempfile.mkdtemp(); self.addCleanup(shutil.rmtree, self.d)
@@ -68,7 +75,7 @@ class CompactUse(unittest.TestCase):
             "## [gotcha] timezone bug in the weekly report\ndates converted twice\n")
 
     def test_group_is_annotated_and_every_attempt_text_survives_in_every_draft(self):
-        out, created = compact.plan(self.d, "2026-01-01", write=True)
+        out, created = compact.plan(self.d, "2026-01-01", write=True, group=True)
         self.assertIn("1 recurring-problem group(s)", out)
         self.assertIn("~~ same recurring problem as: raise the connection pool size", out)
         self.assertEqual(len(created), 3)                                    # grouping never suppresses a draft
@@ -79,8 +86,18 @@ class CompactUse(unittest.TestCase):
         self.assertIn("## Predicted outcome", dec); self.assertIn("## Observed", dec)
         self.assertNotIn("Related attempts", open(f"{self.d}/facts/timezone-bug-in-the-weekly-report.md").read())
 
-    def test_drafts_written_this_run_are_not_duplicates_of_each_other(self):
+    def test_grouping_is_off_by_default(self):
         out, created = compact.plan(self.d, "2026-01-01", write=True)
+        self.assertNotIn("~~", out); self.assertNotIn("recurring-problem", out)
+        self.assertNotIn("Related attempts", open(f"{self.d}/facts/pool-exhausted-errors-under-load.md").read())
+
+    def test_cli_flag(self):
+        import subprocess
+        run = lambda *a: subprocess.run([sys.executable, f"{ROOT}/scripts/compact.py", *a], env={**os.environ, "BRAIN_DIR": self.d}, capture_output=True, text=True).stdout
+        self.assertNotIn("~~", run()); self.assertIn("~~", run("--group"))
+
+    def test_drafts_written_this_run_are_not_duplicates_of_each_other(self):
+        out, created = compact.plan(self.d, "2026-01-01", write=True, group=True)
         self.assertNotIn("probable duplicate", out)                          # regression: sibling lists in draft 1 matched items 2 and 3
 
 

@@ -41,7 +41,7 @@ Use `brain.py context "<task>" --budget 8000 --cwd <repo>` for a bounded context
 
 ## 2. Inbox compaction
 Starting from an example (`init --example web-app`, see `examples/README.md`) gives realistic facts, a workstream and tested eval questions to replace with your own. Setup in one command: `brain.py init --org "Acme" --claude` (config, primer, Claude Code import/skills/hooks; idempotent). Capture is automatic with the hooks it installs: `capture_hook.py stop` asks once, after real work, for learnings to be recorded; `capture_hook.py prompt` stores user corrections in the inbox.
-`mine_sessions.py` (after `digest_sessions.py`) proposes inbox entries from recurring errors and user corrections across past sessions. `brain.py compact` prints a deterministic plan (where each item goes, probable duplicates); `--write` drafts unverified facts/decisions, `--archive` moves handled files to `inbox/processed/`. Drafts still need the verification below. Same-problem items get `~~` and a "Related attempts" list in each draft (precision ~0.5: check before merging).
+`mine_sessions.py` (after `digest_sessions.py`) proposes inbox entries from recurring errors and user corrections across past sessions. `brain.py compact` prints a deterministic plan (where each item goes, probable duplicates); `--write` drafts unverified facts/decisions, `--archive` moves handled files to `inbox/processed/`. Drafts still need the verification below. `--group` annotates same-problem items (off: it lowered a model's grouping F1 in an A/B).
 1. `brain.py inbox` lists unprocessed files. Read each.
 2. Classify every item:
    - gotcha/learning → `facts/<slug>.md` (template: `templates/fact.md`)

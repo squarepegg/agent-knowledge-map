@@ -1,0 +1,10 @@
+{"arm": "plain", "run": 0, "model": "haiku", "precision": 1.0, "recall": 0.8823529411764706, "f1": 0.9375, "valid": true}
+{"arm": "annotated", "run": 0, "model": "haiku", "precision": 0.75, "recall": 0.8823529411764706, "f1": 0.8108108108108107, "valid": true}
+{"arm": "plain", "run": 1, "model": "haiku", "precision": 1.0, "recall": 0.8823529411764706, "f1": 0.9375, "valid": true}
+{"arm": "annotated", "run": 1, "model": "haiku", "precision": 0.8947368421052632, "recall": 1.0, "f1": 0.9444444444444444, "valid": true}
+{"arm": "plain", "run": 2, "model": "haiku", "precision": 1.0, "recall": 1.0, "f1": 1.0, "valid": true}
+{"arm": "annotated", "run": 2, "model": "haiku", "precision": 1.0, "recall": 1.0, "f1": 1.0, "valid": true}
+{"arm": "plain", "run": 3, "model": "haiku", "precision": 0.85, "recall": 1.0, "f1": 0.9189189189189189, "valid": true}
+{"arm": "annotated", "run": 3, "model": "haiku", "precision": 0.7727272727272727, "recall": 1.0, "f1": 0.8717948717948718, "valid": true}
+{"arm": "plain", "run": 4, "model": "haiku", "precision": 1.0, "recall": 0.8823529411764706, "f1": 0.9375, "valid": true}
+{"arm": "annotated", "run": 4, "model": "haiku", "precision": 0.7727272727272727, "recall": 1.0, "f1": 0.8717948717948718, "valid": true}

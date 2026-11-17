@@ -4,8 +4,9 @@ each item belongs and flags probable duplicates already in the brain. It drafts;
   compact.py                 print the plan (markdown)
   compact.py --write         also create draft files: facts/<slug>.md and decisions/<date>-<slug>.md (never overwrites an existing file)
   compact.py --archive       move the inbox files to inbox/processed/ (do this after the items are handled)
-Items that cluster.py judges to be the same recurring problem are annotated (`~~`) and each draft lists its siblings' own title and body under
-"Related attempts": nothing is merged or dropped (grouping is a suggestion; evals/cluster.yaml measures how good). Routing: gotcha|fact -> facts/ draft; decision -> decisions/ draft; capability -> capabilities.yaml snippet; workstream -> STATE.md Progress line;
+With `--group` (off by default), items that cluster.py judges to be the same recurring problem are annotated (`~~`) and each draft lists its siblings' own
+title and body under "Related attempts": nothing is merged or dropped. Off by default because evals/cluster-ab measured it as a net loss for a model
+grouping an inbox (F1 0.95 plain vs 0.90 annotated, haiku, n=5). Routing: gotcha|fact -> facts/ draft; decision -> decisions/ draft; capability -> capabilities.yaml snippet; workstream -> STATE.md Progress line;
 correction -> facts/user-instincts.md row (the user is the authority: fix the rejected claim wherever it is stated). Env: BRAIN_DIR."""
 import datetime, glob, os, re, shutil, sys
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
@@ -70,11 +71,11 @@ def route(item, brain_dir, today, siblings=()):
         return "facts/user-instincts.md", f"fix the rejected claim wherever it is stated, then add row: **When** ... -> **do** ... _Evidence:_ user correction {today}, high.", None, None
     return "?", f"unknown kind '{k}': classify by hand", None, None
 
-def plan(brain_dir=None, today=None, write=False):
+def plan(brain_dir=None, today=None, write=False, group=False):
     brain_dir = brain_dir or B; today = today or str(datetime.date.today()); lines, created = [], []
     files = brain.inbox(brain_dir)
     items = [(f, it) for f in files for it in parse(open(f, errors="ignore").read())]
-    rel = related([it for _, it in items])
+    rel = related([it for _, it in items]) if group else {}
     dups = [duplicate_of(it, brain_dir) for _, it in items]   # before any draft is written: this run's own drafts list their siblings
     for n, (f, item) in enumerate(items):
         sib = [items[j][1] for j in rel.get(n, [])]
@@ -99,7 +100,7 @@ def archive(brain_dir=None):
 def main(argv):
     if "--archive" in argv: print("archived:", ", ".join(archive()) or "nothing"); return 0
     try:
-        out, _ = plan(write="--write" in argv); print(out); return 0
+        out, _ = plan(write="--write" in argv, group="--group" in argv); print(out); return 0
     except (OSError, _records.RecordError) as e:
         print('refusing: ' + str(e), file=sys.stderr); return 2
 
