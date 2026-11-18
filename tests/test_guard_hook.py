@@ -27,6 +27,15 @@ class Paths(unittest.TestCase):
     def test_bare_tilde_and_unlisted_roots(self):
         self.assertEqual(dec(bash("ls ~")), ("ask", "outside_workdir")); self.assertEqual(dec(path_call("read", "/Weird/x")), ("ask", "outside_workdir"))
 
+    def test_the_filesystem_root_on_its_own_is_a_place(self):
+        # found by replaying 763 recorded agent calls: `find / ...` (a search of the whole disk) was the single biggest escape and was allowed
+        for c in (bash("find / -name '*.pem' 2>/dev/null"), bash("ls /"), bash("du -sh /"), bash("grep -r secret /"), bash("cd / && ls"), bash("cat x | find / -type f"), path_call("read", "/")):
+            self.assertEqual(dec(c), ("ask", "outside_workdir"), c)
+
+    def test_a_slash_that_is_only_inside_quotes_is_not_the_root(self):
+        for c in (bash("awk '{print $1 / 2}' a.txt"), bash('echo "a / b"'), bash("sed 's/a/b/' a.txt"), bash("git log -- ./")):
+            self.assertEqual(dec(c), ("allow", ""), c)
+
     def test_dotdot_that_stays_inside_is_inside(self):
         self.assertEqual(dec(bash("cat src/../README.md")), ("allow", ""))
 

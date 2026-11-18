@@ -104,17 +104,20 @@ def _resolve(tok, cwd, home):
 
 def _tokens(text):
     out = []
+    # A lone `/` is the filesystem root (`find / -name x`), unless it only appears inside quotes (`awk '{print $1 / 2}'`).
+    root = bool(re.search(r"(?:^|[\s;|&<>()])/(?=$|[\s;|&<>()])", re.sub(r"\"[^\"]*\"|'[^']*'", " ", text)))
     for t in SPLIT.split(text):
         t = t.strip("'\"")
         if t.startswith("-"): t = t.partition("=")[2].strip("'\"")   # --out=/etc/x: the value is the path
+        if t == "/" and not root: continue
         if t: out.append(t)
     return out
 
 
 def _pathish(tok):
-    """Does this word name a place? Only well-known roots, `~` and `..` components count, so a sed address `/foo/p` or a URL does not."""
+    """Does this word name a place? Only well-known roots, a lone `/` (the root itself), `~` and `..` components count, so a sed address `/foo/p` or a URL does not."""
     if "://" in tok: return False
-    if tok == "~" or tok.startswith("~/") or DOTDOT.search(tok): return True
+    if tok == "/" or tok == "~" or tok.startswith("~/") or DOTDOT.search(tok): return True
     return tok.startswith("/") and tok.split("/")[1] in ROOTS
 
 
