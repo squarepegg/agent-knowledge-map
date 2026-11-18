@@ -305,3 +305,9 @@ mutants:
 - id: ts-not-utc
   old: datetime.datetime.now(datetime.timezone.utc)
   new: datetime.datetime.now()
+- id: lone-root-not-a-place
+  old: 'if tok == "/" or tok == "~" or tok.startswith("~/") or DOTDOT.search(tok): return True'
+  new: 'if tok == "~" or tok.startswith("~/") or DOTDOT.search(tok): return True'
+- id: quoted-slash-counts-as-the-root
+  old: 'if t == "/" and not root: continue'
+  new: pass
